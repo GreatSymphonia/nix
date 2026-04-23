@@ -2,6 +2,10 @@
   fonts.fontconfig.enable = true;
 
   home.packages = with pkgs; [
+    candy-icons
+    # kdePackages.konsole # fallback utile
+    kdePackages.spectacle
+    kdePackages.kdeplasma-addons
     nerd-fonts.fira-code
     libsForQt5.qtstyleplugin-kvantum
   ];
@@ -30,7 +34,7 @@
 
   qt = {
     enable             = true;
-    platformTheme.name = "kvantum";
-    style.name         = "kvantum";
+    platformTheme.name = "Breeze";
+    style.name         = "Breeze";
   };
 }

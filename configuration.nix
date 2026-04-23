@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
+
 let
   home-manager = builtins.fetchTarball https://github.com/nix-community/home-manager/archive/release-25.11.tar.gz;
+  plasma-manager = builtins.fetchTarball https://github.com/nix-community/plasma-manager/archive/master.tar.gz;
 in {
   imports = [
     ./hardware-configuration.nix
@@ -10,6 +12,7 @@ in {
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
 
   # Réseau
   networking.hostName = "nixos";
@@ -70,12 +73,18 @@ in {
   };
 
   # Home Manager
-  home-manager.users.louis = import ./home;
+  home-manager.users.louis = { pkgs, ... }: {
+    imports = [
+      ./home
+      "${plasma-manager}/modules"
+    ];
+  };
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
 
   # Paquets système (le minimum — le reste va dans home-manager)
   programs.firefox.enable = true;
+  programs.steam.enable = true;
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
     vim
@@ -85,4 +94,5 @@ in {
   ];
 
   system.stateVersion = "25.11";
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 }

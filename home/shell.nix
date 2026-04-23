@@ -16,9 +16,9 @@
       grep   = "grep --color=auto";
       df     = "df -h";
       du     = "du -sh";
-      rebuild = "sudo nixos-rebuild switch";
-      update  = "sudo nix flake update && sudo nixos-rebuild switch";
-      cleanup = "sudo nix-collect-garbage -d";
+      nixupdate  = "sudo nix flake update && sudo nixos-rebuild switch";
+      nixcleanup = "sudo nix-collect-garbage -d";
+      nixrebuild = "sudo nixos-rebuild switch";
       g      = "git";
       gs     = "git status";
       gd     = "git diff";
@@ -31,14 +31,14 @@
 
       enixcfg() {
         case "$1" in
-          ""|main)   sudo micro /etc/nixos/configuration.nix ;;
-          home)      sudo micro /etc/nixos/home/default.nix ;;
-          shell)     sudo micro /etc/nixos/home/shell.nix ;;
-          git)       sudo micro /etc/nixos/home/git.nix ;;
-          editors)   sudo micro /etc/nixos/home/editors.nix ;;
-          apps)      sudo micro /etc/nixos/home/apps.nix ;;
-          theme)     sudo micro /etc/nixos/home/theme.nix ;;
-          *)         echo "Sous-commandes: main home shell git editors apps theme" ;;
+          ""|main)   sudo -E micro /etc/nixos/configuration.nix ;;
+          home)      sudo -E micro /etc/nixos/home/default.nix ;;
+          shell)     sudo -E micro /etc/nixos/home/shell.nix ;;
+          git)       sudo -E micro /etc/nixos/home/git.nix ;;
+          editors)   sudo -E micro /etc/nixos/home/editors.nix ;;
+          apps)      sudo -E micro /etc/nixos/home/apps.nix ;;
+          theme)     sudo -E micro /etc/nixos/home/theme.nix ;;
+          *)         echo -E "Sous-commandes: main home shell git editors apps theme" ;;
         esac
       }
 

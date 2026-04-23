@@ -5,6 +5,7 @@
     ./editors.nix
     ./apps.nix
     ./theme.nix
+    ./plasma.nix
   ];
 
   home.packages = with pkgs; [
@@ -36,7 +37,7 @@
 
   home.file.".config/micro/settings.json".text = ''
     {
-      "colorscheme": "catppuccin-mocha-transparent",
+      "colorscheme": "default",
       "tabsize": 2,
       "tabstospaces": true,
       "autoclose": true,
