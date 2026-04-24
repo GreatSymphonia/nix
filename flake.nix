@@ -28,6 +28,11 @@
       config.allowUnfree = true;
     };
   in {
+    apps.${system}.home-manager = {
+      type = "app";
+      program = "${home-manager.packages.${system}.home-manager}/bin/home-manager";
+    };
+
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {

@@ -20,8 +20,8 @@
       nixboot = "sudo nixos-rebuild boot --flake /etc/nixos#nixos";
       nixtest = "sudo nixos-rebuild test --flake /etc/nixos#nixos";
       nixcheck = "sudo nixos-rebuild build --flake /etc/nixos#nixos --show-trace";
-      hmcheck = "nix run github:nix-community/home-manager/release-25.11 -- build --flake path:/etc/nixos#louis@nixos --no-out-link";
-      hmrebuild = "nix run github:nix-community/home-manager/release-25.11 -- switch --flake path:/etc/nixos#louis@nixos";
+      hmcheck = "nix run path:/etc/nixos#home-manager -- build --flake path:/etc/nixos#louis@nixos --no-out-link";
+      hmrebuild = "nix run path:/etc/nixos#home-manager -- switch --flake path:/etc/nixos#louis@nixos";
       g      = "git";
       gs     = "git status";
       gd     = "git diff";
