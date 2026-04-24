@@ -43,7 +43,8 @@
         local subcmd="$1"
 
         case "$arg" in
-          mod/*|module/*|modules/*) subcmd="''${arg#*/}" ;;
+          mod/*)                    subcmd="$arg" ;;
+          module/*|modules/*)       subcmd="mod/''${arg#*/}" ;;
           mod|module|modules)       subcmd="" ;;
         esac
 
