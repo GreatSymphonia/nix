@@ -22,7 +22,7 @@
       nixcheck = "sudo nixos-rebuild build --flake /etc/nixos#nixos --show-trace";
       hmcheck = "nix run path:/etc/nixos#home-manager -- build --flake path:/etc/nixos#louis@nixos --no-out-link";
       hmrebuild = "nix run path:/etc/nixos#home-manager -- switch --flake path:/etc/nixos#louis@nixos";
-      codenix = "sudo code /etc/nixos --no-sandbox --user-data-dir=/home/louis";
+      codenix = "sudo code /etc/nixos --no-sandbox --user-data-dir=/home/louis/vscode-sudo";
       g      = "git";
       gs     = "git status";
       gd     = "git diff";
