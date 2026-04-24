@@ -21,8 +21,9 @@
     tmux
     htop
     btop
-    tree
     micro
+
+    # Dev CLI
     gnumake
     gcc
     python3

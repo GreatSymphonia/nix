@@ -1,0 +1,45 @@
+{ pkgs, ... }:
+
+{
+  # Bureau KDE Plasma 6
+  services.xserver.enable = true;
+  services.xserver.videoDrivers = [ "displaylink" "modesetting" ];
+  environment.variables = {
+    KWIN_DRM_PREFER_COLOR_DEPTH = "24";
+  };
+
+  services = {
+    desktopManager.plasma6 = {
+      enable = true;
+    };
+    displayManager = {
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+      };
+      defaultSession = "plasma";
+    };
+    fprintd = {
+      enable = true;
+      tod.enable = true;
+      tod.driver = pkgs.libfprint-2-tod1-goodix;
+    };
+    hardware.bolt.enable = true;
+    printing.enable = true;
+  };
+
+  systemd.services.displaylink-server = {
+    enable = true;
+    requires = [ "systemd-udevd.service" ];
+    after = [ "systemd-udevd.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.displaylink}/bin/DisplayLinkManager";
+      User = "root";
+      Group = "root";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
+}

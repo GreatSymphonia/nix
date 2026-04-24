@@ -3,7 +3,6 @@
 
   home.packages = with pkgs; [
     candy-icons
-    # kdePackages.konsole # fallback utile
     kdePackages.spectacle
     kdePackages.kdeplasma-addons
     nerd-fonts.fira-code
@@ -21,8 +20,8 @@
       };
     };
     iconTheme = {
-      name    = "Papirus-Dark";
-      package = pkgs.papirus-icon-theme;
+      name    = "candy-icons";
+      package = pkgs.candy-icons;
     };
     cursorTheme = {
       name    = "Catppuccin-Mocha-Dark-Cursors";

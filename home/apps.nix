@@ -17,6 +17,7 @@
     onlyoffice-desktopeditors
     slack
     teams-for-linux
+    kicad
   ];
 
   programs.ghostty = {
@@ -24,8 +25,8 @@
 
     settings = {
       background             = "1e1e2e";
-      background-opacity     = 0.2;
-      background-blur-radius = 10;
+      background-opacity     = 0.8;
+      background-blur-radius = 20;
       foreground             = "cdd6f4";
       cursor-color           = "f5e0dc";
       selection-background   = "585b70";

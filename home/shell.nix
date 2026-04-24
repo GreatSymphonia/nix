@@ -12,13 +12,16 @@
       ll     = "eza -la --icons --group-directories-first";
       ls     = "eza --icons --group-directories-first";
       tree   = "eza --tree --icons";
-      cat    = "bat";
-      grep   = "grep --color=auto";
       df     = "df -h";
       du     = "du -sh";
-      nixupdate  = "sudo nix flake update && sudo nixos-rebuild switch";
+      nixupdate  = "sudo nix flake update --flake /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#nixos";
       nixcleanup = "sudo nix-collect-garbage -d";
-      nixrebuild = "sudo nixos-rebuild switch";
+      nixrebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nixos";
+      nixboot = "sudo nixos-rebuild boot --flake /etc/nixos#nixos";
+      nixtest = "sudo nixos-rebuild test --flake /etc/nixos#nixos";
+      nixcheck = "sudo nixos-rebuild build --flake /etc/nixos#nixos --show-trace";
+      hmcheck = "home-manager build --flake /etc/nixos#louis@nixos";
+      hmrebuild = "home-manager switch --flake /etc/nixos#louis@nixos";
       g      = "git";
       gs     = "git status";
       gd     = "git diff";
@@ -29,22 +32,47 @@
       eval "$(fzf --bash)"
       export PATH="$HOME/.local/bin:$PATH"
 
+      # Keep command overrides in interactive shells only.
+      if [[ $- == *i* ]]; then
+        alias cat='bat --paging=never'
+        alias grep='grep --color=auto'
+      fi
+
       enixcfg() {
-        case "$1" in
+        local arg="$1"
+        local subcmd="$1"
+
+        case "$arg" in
+          mod/*|module/*|modules/*) subcmd="''${arg#*/}" ;;
+          mod|module|modules)       subcmd="" ;;
+        esac
+
+        case "$subcmd" in
           ""|main)   sudo -E micro /etc/nixos/configuration.nix ;;
           home)      sudo -E micro /etc/nixos/home/default.nix ;;
           shell)     sudo -E micro /etc/nixos/home/shell.nix ;;
+          flake)     sudo -E micro /etc/nixos/flake.nix ;;
+          lock)      sudo -E micro /etc/nixos/flake.lock ;;
           git)       sudo -E micro /etc/nixos/home/git.nix ;;
           editors)   sudo -E micro /etc/nixos/home/editors.nix ;;
           apps)      sudo -E micro /etc/nixos/home/apps.nix ;;
           theme)     sudo -E micro /etc/nixos/home/theme.nix ;;
-          *)         echo -E "Sous-commandes: main home shell git editors apps theme" ;;
+          boot)      sudo -E micro /etc/nixos/modules/nixos/boot.nix ;;
+          locale)    sudo -E micro /etc/nixos/modules/nixos/system-locale.nix ;;
+          desktop)   sudo -E micro /etc/nixos/modules/nixos/desktop.nix ;;
+          audio)     sudo -E micro /etc/nixos/modules/nixos/audio.nix ;;
+          bt)        sudo -E micro /etc/nixos/modules/nixos/bluetooth.nix ;;
+          user)      sudo -E micro /etc/nixos/modules/nixos/user.nix ;;
+          packages)  sudo -E micro /etc/nixos/modules/nixos/packages.nix ;;
+          nix)       sudo -E micro /etc/nixos/modules/nixos/nix-core.nix ;;
+          virt)      sudo -E micro /etc/nixos/modules/nixos/virtualisation.nix ;;
+          *)         echo -E "Sous-commandes: main home shell flake lock git editors apps theme boot locale desktop audio bt user packages nix virt | Prefixe modules: mod/<nom>" ;;
         esac
       }
 
       _enixcfg_complete() {
         local cur="''${COMP_WORDS[COMP_CWORD]}"
-        COMPREPLY=($(compgen -W "main home shell git editors apps theme" -- "$cur"))
+        COMPREPLY=($(compgen -W "main home shell flake lock git editors apps theme boot locale desktop audio bt user packages nix virt mod/boot mod/locale mod/desktop mod/audio mod/bt mod/user mod/packages mod/nix mod/virt" -- "$cur"))
       }
       complete -F _enixcfg_complete enixcfg
     '';

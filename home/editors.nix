@@ -1,6 +1,7 @@
-{ pkgs, ... }: {
+{ pkgs, unstable, ... }: {
   programs.vscode = {
     enable = true;
+    package = unstable.vscode;
     profiles.default = {
       extensions = with pkgs.vscode-extensions; [
         # Thème
@@ -8,15 +9,6 @@
         catppuccin.catppuccin-vsc-icons
 
         # Git
-        vscodevim.vim
-        (pkgs.vscode-utils.buildVscodeMarketplaceExtension {
-          mktplcRef = {
-            name      = "gitless";
-            publisher = "maattdd";
-            version   = "11.7.2";
-            sha256    = "sha256-rYeZNBz6HeZ059ksChGsXbuOao9H5m5lHGXJ4ELs6xc=";
-          };
-        })
         github.vscode-pull-request-github
 
         # Formatters / Linters
@@ -25,7 +17,9 @@
         redhat.vscode-yaml
 
         # Langages
+        redhat.ansible
         ms-python.python
+        # ms-python.vscode-python-envs
         ms-vscode.cpptools
         redhat.java
         jnoortheen.nix-ide
