@@ -48,31 +48,38 @@
         esac
 
         case "$subcmd" in
-          ""|main)   sudo -E micro /etc/nixos/configuration.nix ;;
-          home)      sudo -E micro /etc/nixos/home/default.nix ;;
-          shell)     sudo -E micro /etc/nixos/home/shell.nix ;;
-          flake)     sudo -E micro /etc/nixos/flake.nix ;;
-          lock)      sudo -E micro /etc/nixos/flake.lock ;;
-          git)       sudo -E micro /etc/nixos/home/git.nix ;;
-          editors)   sudo -E micro /etc/nixos/home/editors.nix ;;
-          apps)      sudo -E micro /etc/nixos/home/apps.nix ;;
-          theme)     sudo -E micro /etc/nixos/home/theme.nix ;;
-          boot)      sudo -E micro /etc/nixos/modules/nixos/boot.nix ;;
-          locale)    sudo -E micro /etc/nixos/modules/nixos/system-locale.nix ;;
-          desktop)   sudo -E micro /etc/nixos/modules/nixos/desktop.nix ;;
-          audio)     sudo -E micro /etc/nixos/modules/nixos/audio.nix ;;
-          bt)        sudo -E micro /etc/nixos/modules/nixos/bluetooth.nix ;;
-          user)      sudo -E micro /etc/nixos/modules/nixos/user.nix ;;
-          packages)  sudo -E micro /etc/nixos/modules/nixos/packages.nix ;;
-          nix)       sudo -E micro /etc/nixos/modules/nixos/nix-core.nix ;;
-          virt)      sudo -E micro /etc/nixos/modules/nixos/virtualisation.nix ;;
-          *)         echo -E "Sous-commandes: main home shell flake lock git editors apps theme boot locale desktop audio bt user packages nix virt | Prefixe modules: mod/<nom>" ;;
+          ""|main)      sudo -E micro /etc/nixos/configuration.nix ;;
+          home)         sudo -E micro /etc/nixos/home/default.nix ;;
+          shell)        sudo -E micro /etc/nixos/home/shell.nix ;;
+          flake)        sudo -E micro /etc/nixos/flake.nix ;;
+          lock)         sudo -E micro /etc/nixos/flake.lock ;;
+          git)          sudo -E micro /etc/nixos/home/git.nix ;;
+          editors)      sudo -E micro /etc/nixos/home/editors.nix ;;
+          apps)         sudo -E micro /etc/nixos/home/apps.nix ;;
+          theme)        sudo -E micro /etc/nixos/home/theme.nix ;;
+          mod/boot)     sudo -E micro /etc/nixos/modules/nixos/boot.nix ;;
+          mod/locale)   sudo -E micro /etc/nixos/modules/nixos/system-locale.nix ;;
+          mod/desktop)  sudo -E micro /etc/nixos/modules/nixos/desktop.nix ;;
+          mod/audio)    sudo -E micro /etc/nixos/modules/nixos/audio.nix ;;
+          mod/bt)       sudo -E micro /etc/nixos/modules/nixos/bluetooth.nix ;;
+          mod/user)     sudo -E micro /etc/nixos/modules/nixos/user.nix ;;
+          mod/packages) sudo -E micro /etc/nixos/modules/nixos/packages.nix ;;
+          mod/nix)      sudo -E micro /etc/nixos/modules/nixos/nix-core.nix ;;
+          mod/virt)     sudo -E micro /etc/nixos/modules/nixos/virtualisation.nix ;;
+          *)            echo -E "Sous-commandes: main home shell flake lock git editors apps theme | Modules: mod/<boot|locale|desktop|audio|bt|user|packages|nix|virt>" ;;
         esac
       }
 
       _enixcfg_complete() {
         local cur="''${COMP_WORDS[COMP_CWORD]}"
-        COMPREPLY=($(compgen -W "main home shell flake lock git editors apps theme boot locale desktop audio bt user packages nix virt mod/boot mod/locale mod/desktop mod/audio mod/bt mod/user mod/packages mod/nix mod/virt" -- "$cur"))
+        local core_cmds="main home shell flake lock git editors apps theme mod/"
+        local mod_cmds="mod/boot mod/locale mod/desktop mod/audio mod/bt mod/user mod/packages mod/nix mod/virt"
+
+        if [[ "$cur" == mod/* ]]; then
+          COMPREPLY=($(compgen -W "$mod_cmds" -- "$cur"))
+        else
+          COMPREPLY=($(compgen -W "$core_cmds $mod_cmds" -- "$cur"))
+        fi
       }
       complete -F _enixcfg_complete enixcfg
     '';
