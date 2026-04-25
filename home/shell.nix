@@ -37,9 +37,9 @@
 
       # Keep command overrides in interactive shells only.
       if [[ $- == *i* ]]; then
-        alias ccat='cat'
-        alias cat='bat --paging=never'
         alias grep='grep --color=auto'
+        alias cat='bat --paging=never'
+        alias ccat='/run/current-system/sw/bin/cat'
       fi
 
       enixcfg() {
