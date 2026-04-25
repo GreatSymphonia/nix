@@ -18,6 +18,7 @@
     slack
     teams-for-linux
     kicad
+    kubectl
   ];
 
   programs.ghostty = {
