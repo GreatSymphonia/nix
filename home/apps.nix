@@ -19,6 +19,7 @@
     teams-for-linux
     kicad
     kubectl
+    talosctl
   ];
 
   programs.ghostty = {
