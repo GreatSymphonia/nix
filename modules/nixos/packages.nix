@@ -30,6 +30,7 @@
       ansible
       ansible-core
       ansible-lint
+      ansible-language-server
     ]))
   ];
 }
