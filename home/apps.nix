@@ -12,6 +12,7 @@
     kdePackages.kcalc
     kdePackages.yakuake
 
+    ansible-lint
     fastfetch
     discord
     onlyoffice-desktopeditors
