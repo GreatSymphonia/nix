@@ -3,7 +3,10 @@
 {
   # Reseau
   networking.hostName = "nixos";
-  networking.networkmanager.enable = true;
+  networking.networkmanager = {
+    enable = true;
+    plugins = [ pkgs.networkmanager-openvpn ];
+  }
 
   # Fuseau horaire et locale
   time.timeZone = "America/New_York";

@@ -24,6 +24,9 @@
     screen
     wireshark
 
+    # VPN
+    wireguard-tools
+
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
       requests
