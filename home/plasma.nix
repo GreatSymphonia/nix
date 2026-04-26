@@ -24,7 +24,7 @@
       kwin."Grid View" = "Meta+Shift+Tab";
 
       plasmashell."activate application launcher" = "Alt+F1";
-      krunner._launch = "Meta";
+      services."org.kde.krunner.desktop"._launch = [ "Meta" ];
       plasmashell."activate task manager entry 1" = "Meta+1";
       plasmashell."activate task manager entry 2" = "Meta+2";
       plasmashell."activate task manager entry 3" = "Meta+3";
