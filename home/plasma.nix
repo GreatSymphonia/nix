@@ -22,9 +22,9 @@
 
       kwin.Overview = "Meta+Tab";
       kwin."Grid View" = "Meta+Shift+Tab";
+      kwin."Show KRunner" = "Meta";
 
       plasmashell."activate application launcher" = "Alt+F1";
-      services."org.kde.krunner.desktop" = [ "Meta" ];
       plasmashell."activate task manager entry 1" = "Meta+1";
       plasmashell."activate task manager entry 2" = "Meta+2";
       plasmashell."activate task manager entry 3" = "Meta+3";
@@ -35,6 +35,11 @@
     };
 
     configFile = {
+      kglobalshortcutsrc = {
+        "krunner.desktop"."_launch" = "Meta,Alt+F2,KRunner";
+        # or try:
+        # "org.kde.krunner.desktop"."_launch" = "Meta,none,KRunner";
+      };
       kdeglobals = {
         General = {
           TerminalApplication = "${pkgs.ghostty}/bin/ghostty --gtk-single-instance=true";

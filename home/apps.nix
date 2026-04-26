@@ -23,6 +23,7 @@
     # krew
     kubelogin-oidc
     talosctl
+    nil
   ];
 
   programs.ghostty = {
