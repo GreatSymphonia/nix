@@ -5,7 +5,10 @@
     enable = true;
 
     shortcuts = {
-      "ksmserver"."Lock Session" = [ "Meta+L" "Screensaver" ];
+      "ksmserver"."Lock Session" = [
+        "Meta+L"
+        "Screensaver"
+      ];
       "ksmserver"."Log Out" = "Ctrl+Alt+Del";
 
       kwin."Walk Through Windows" = "Alt+Tab";
@@ -28,6 +31,10 @@
       plasmashell."activate task manager entry 1" = "Meta+1";
       plasmashell."activate task manager entry 2" = "Meta+2";
       plasmashell."activate task manager entry 3" = "Meta+3";
+
+      services."org.kde.krunner.desktop" = "Meta";
+      "services/krunner.desktop"._launch = "Meta";
+      "services/org.kde.krunner.desktop"._launch = "Meta";
 
       kmix.mute = "Volume Mute";
       kmix.increase_volume = "Volume Up";
