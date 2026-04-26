@@ -25,7 +25,7 @@
 
       kwin.Overview = "Meta+Tab";
       kwin."Grid View" = "Meta+Shift+Tab";
-      krunner._launch = [ "Meta" ];
+      krunner._launch = [ ];
 
       plasmashell."activate application launcher" = "Alt+F1";
       plasmashell."activate task manager entry 1" = "Meta+1";
@@ -72,6 +72,7 @@
         Tiling.padding = 4;
 
         Xwayland.Scale = 1.35;
+        ModifierOnlyShortcuts.Meta = "org.kde.krunner,/App,org.kde.krunner.App,display";
       };
 
       krunnerrc.General = {
