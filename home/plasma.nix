@@ -8,8 +8,8 @@
       "ksmserver"."Lock Session" = [ "Meta+L" "Screensaver" ];
       "ksmserver"."Log Out" = "Ctrl+Alt+Del";
 
-      kwin."Walk Through Windows" = [ "Meta+Tab" "Alt+Tab" ];
-      kwin."Walk Through Windows (Reverse)" = [ "Meta+Shift+Tab" "Alt+Shift+Tab" ];
+      kwin."Walk Through Windows" = "Alt+Tab";
+      kwin."Walk Through Windows (Reverse)" = "Alt+Shift+Tab";
 
       kwin."Window Close" = "Alt+F4";
       kwin."Window Maximize" = "Meta+PgUp";
@@ -20,10 +20,11 @@
       kwin."Window Quick Tile Top" = "Meta+Up";
       kwin."Window Quick Tile Bottom" = "Meta+Down";
 
-      kwin.Overview = "Meta+W";
-      kwin."Grid View" = "Meta+G";
+      kwin.Overview = "Meta+Tab";
+      kwin."Grid View" = "Meta+Shift+Tab";
 
-      plasmashell."activate application launcher" = [ "Meta" "Alt+F1" ];
+      plasmashell."activate application launcher" = "Alt+F1";
+      krunner._launch = "Meta";
       plasmashell."activate task manager entry 1" = "Meta+1";
       plasmashell."activate task manager entry 2" = "Meta+2";
       plasmashell."activate task manager entry 3" = "Meta+3";
