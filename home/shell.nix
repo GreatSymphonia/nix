@@ -79,12 +79,12 @@
         local cur="''${COMP_WORDS[COMP_CWORD]}"
         local core_cmds="main home shell flake lock git editors apps theme mod/"
         local mod_cmds="mod/boot mod/locale mod/desktop mod/audio mod/bt mod/user mod/packages mod/nix mod/virt"
-# 
-#         if [[ "$cur" == mod/* ]]; then
-#           COMPREPLY=($(compgen -W "$mod_cmds" -- "$cur"))
-#         else
-#           COMPREPLY=($(compgen -W "$core_cmds $mod_cmds" -- "$cur"))
-#         fi
+
+        if [[ "''${cur}" == mod/* ]]; then
+          COMPREPLY=($(compgen -W "$mod_cmds" -- "''${cur}"))
+        else
+          COMPREPLY=($(compgen -W "$core_cmds $mod_cmds" -- "''${cur}"))
+        fi
       }
       complete -F _enixcfg_complete enixcfg
     '';
