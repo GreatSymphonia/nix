@@ -23,6 +23,10 @@ let
       ${mkdir} -p -m 700 "${profileDir}"
       ${install} -m 600 "$source_path" "$staged_path"
 
+      if [ "$connection_type" = "wireguard" ]; then
+        ${pkgs.gnused}/bin/sed -i 's#AllowedIPs = 0.0.0.0/0,::/0#AllowedIPs = 10.0.21.0/24#' "$staged_path"
+      fi
+
       if ! ${nmcli} general status >/dev/null 2>&1; then
         return 0
       fi
