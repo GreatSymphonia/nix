@@ -20,7 +20,17 @@
     teams-for-linux
     kicad
     kubectl
-    helm
+    kubernetes-helm
+
+    (wrapHelm kubernetes-helm {
+      plugins = with pkgs.kubernetes-helmPlugins; [
+        helm-secrets
+        helm-diff
+        helm-s3
+        helm-git
+      ];
+    })
+    
     # krew
     kubelogin-oidc
     talosctl
