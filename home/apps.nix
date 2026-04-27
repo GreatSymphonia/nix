@@ -23,6 +23,7 @@
     kubectl
     kubernetes-helm
     filezilla
+    prismlauncher
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
