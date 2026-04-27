@@ -22,6 +22,7 @@
     kicad
     kubectl
     kubernetes-helm
+    filezilla
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
