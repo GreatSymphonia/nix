@@ -20,6 +20,7 @@
     teams-for-linux
     kicad
     kubectl
+    helm
     # krew
     kubelogin-oidc
     talosctl
