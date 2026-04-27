@@ -15,8 +15,9 @@
     ansible-lint
     fastfetch
     discord
-    onlyoffice-desktopeditors
+    signal
     slack
+    onlyoffice-desktopeditors
     teams-for-linux
     kicad
     kubectl
