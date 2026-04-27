@@ -23,6 +23,7 @@
     kdePackages.plasma-thunderbolt
     screen
     wireshark
+    ripgrep
 
     # VPN
     wireguard-tools

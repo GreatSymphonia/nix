@@ -6,6 +6,7 @@
     ./apps.nix
     ./theme.nix
     ./plasma.nix
+    ./networkmanager.nix
   ];
 
   home.packages = with pkgs; [
