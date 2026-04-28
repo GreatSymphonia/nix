@@ -24,6 +24,7 @@
     kubernetes-helm
     filezilla
     prismlauncher
+    google-cloud-sdk
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
