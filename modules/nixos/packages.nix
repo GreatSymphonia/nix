@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Paquets systeme (le minimum — le reste va dans home-manager)
@@ -10,6 +10,21 @@
     usbmon.enable = true;
     package = pkgs.wireshark;
   };
+
+  {
+    programs.obs-studio = {
+      enable = true;
+
+      plugins = with pkgs.obs-studio-plugins; [
+        wlrobs
+        obs-backgroundremoval
+        obs-pipewire-audio-capture
+        obs-vaapi #optional AMD hardware acceleration
+        obs-gstreamer
+        obs-vkcapture
+      ];
+    };
+  }
 
   nixpkgs.config.allowUnfree = true;
 
