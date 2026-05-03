@@ -12,6 +12,7 @@
     kdePackages.kcalc
     kdePackages.yakuake
 
+    satisfactorymodmanager
     ansible-lint
     fastfetch
     discord
