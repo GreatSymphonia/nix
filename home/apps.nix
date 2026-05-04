@@ -26,6 +26,7 @@
     filezilla
     prismlauncher
     google-cloud-sdk
+    nextcloud-client
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
