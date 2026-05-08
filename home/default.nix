@@ -35,6 +35,7 @@
     BROWSER = "firefox";
     EDITOR  = "micro";
     VISUAL  = "micro";
+    GTK_IM_MODULE = "simple";
   };
 
   home.file.".config/micro/settings.json".text = ''
