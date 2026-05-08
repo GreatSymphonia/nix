@@ -68,6 +68,8 @@
       cursor-style      = "block";
       shell-integration = "bash";
 
+      gtk-im-module = "xim";
+
       # extraConfig = ''
       #   keybind = super+alt+t=toggle_quick_terminal
       #   quick-terminal-position = top
