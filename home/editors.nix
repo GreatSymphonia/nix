@@ -27,6 +27,7 @@
 
         # Remote / Containers
         ms-vscode-remote.remote-ssh
+        ms-vscode.remote-explorer
         ms-azuretools.vscode-docker
         ms-kubernetes-tools.vscode-kubernetes-tools
 
