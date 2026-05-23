@@ -31,7 +31,6 @@
     wget
     curl
     git
-    displaylink
     fprintd
     kdePackages.plasma-thunderbolt
     screen
