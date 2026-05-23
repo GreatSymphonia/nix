@@ -10,7 +10,7 @@
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "thunderbolt" "usbhid" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
-  boot.extraModulePackages = [ ];
+  boot.extraModulePackages = lib.mkForce [ ];
 
   # Temporary fix for Mediatek Bluetooth kernel bug.
   # Revert once the fix is merged into stable/unstable.
