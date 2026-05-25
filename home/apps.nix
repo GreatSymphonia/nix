@@ -27,6 +27,9 @@
     prismlauncher
     google-cloud-sdk
     nextcloud-client
+    ungoogled-chromium
+    clonehero
+    yarg
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
