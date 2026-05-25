@@ -1,7 +1,5 @@
 { config, pkgs, ... }:
-
 {
-  # Paquets systeme (le minimum — le reste va dans home-manager)
   programs.firefox.enable = true;
   programs.steam.enable = true;
   programs.wireshark = {
@@ -10,21 +8,26 @@
     usbmon.enable = true;
     package = pkgs.wireshark;
   };
-
   programs.obs-studio = {
     enable = true;
-
     plugins = with pkgs.obs-studio-plugins; [
       wlrobs
       obs-backgroundremoval
       obs-pipewire-audio-capture
-      obs-vaapi #optional AMD hardware acceleration
+      obs-vaapi
       obs-gstreamer
       obs-vkcapture
     ];
   };
 
   nixpkgs.config.allowUnfree = true;
+
+  nix.settings = {
+    substituters = [ "https://cache.nixos.org" ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
     vim
@@ -34,10 +37,9 @@
     fprintd
     kdePackages.plasma-thunderbolt
     screen
-    wireshark
     ripgrep
-
-    # VPN
+    clonehero
+    yarg
     wireguard-tools
 
     (python3.withPackages (python-pkgs: with python-pkgs; [

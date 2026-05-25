@@ -41,9 +41,6 @@
 
         # Qualité de vie
         usernamehw.errorlens
-
-        # MD
-        yzane.markdown-pdf
       ];
 
       userSettings = {
