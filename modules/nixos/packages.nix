@@ -31,6 +31,7 @@
 
   environment.systemPackages = with pkgs; [
     vim
+    traceroute
     wget
     curl
     git
