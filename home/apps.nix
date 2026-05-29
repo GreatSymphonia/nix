@@ -28,6 +28,7 @@
     google-cloud-sdk
     nextcloud-client
     pandoc
+    zotero
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
