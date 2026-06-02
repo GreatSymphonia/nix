@@ -21,7 +21,6 @@ in {
     imports = [
       ./home
     ];
-    home.file.".gtkrc-2.0".force = true;
   };
   home-manager.backupFileExtension = "bak";
   home-manager.useGlobalPkgs = true;
