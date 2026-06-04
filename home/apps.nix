@@ -13,6 +13,7 @@
     kdePackages.yakuake
 
     satisfactorymodmanager
+    zed
     ansible-lint
     fastfetch
     discord
