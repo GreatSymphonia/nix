@@ -42,7 +42,8 @@
     clonehero
     yarg
     wireguard-tools
-
+    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
+    
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
       requests
