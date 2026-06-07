@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, inputs, pkgs, ... }:
 {
   programs.firefox.enable = true;
   programs.steam.enable = true;
@@ -43,7 +43,7 @@
     yarg
     wireguard-tools
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
-    
+
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
       requests

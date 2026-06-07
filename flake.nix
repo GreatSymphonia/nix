@@ -42,7 +42,7 @@
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inherit unstablePkgs;
+        inherit unstablePkgs inputs;
       };
       modules = [
         home-manager.nixosModules.home-manager
