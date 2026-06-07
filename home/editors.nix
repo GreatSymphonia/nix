@@ -36,8 +36,9 @@
         jebbs.plantuml
 
         # IA
-        github.copilot
-        github.copilot-chat
+        # github.copilot
+        # github.copilot-chat
+        anthropic.claude-code
 
         # Qualité de vie
         usernamehw.errorlens

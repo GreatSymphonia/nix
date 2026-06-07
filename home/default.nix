@@ -7,6 +7,7 @@
     ./theme.nix
     ./plasma.nix
     ./networkmanager.nix
+    ./claude-code.nix
   ];
 
   home.packages = with pkgs; [
