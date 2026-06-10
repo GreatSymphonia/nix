@@ -1,4 +1,4 @@
-{ config, inputs, pkgs, ... }:
+{ config, inputs, pkgs, services, ... }:
 {
   programs.firefox.enable = true;
   programs.steam.enable = true;
@@ -29,6 +29,11 @@
     ];
   };
 
+  services.mullvad-vpn = {
+    enable = true;
+    package = pkgs.mullvad-vpn;
+  };
+
   environment.systemPackages = with pkgs; [
     vim
     traceroute
@@ -43,6 +48,9 @@
     yarg
     wireguard-tools
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
+    krita
+    gimp
+    inkscape
 
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
