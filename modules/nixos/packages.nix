@@ -51,6 +51,9 @@
     krita
     gimp
     inkscape
+    temurin-bin-8
+    temurin-bin-11
+    temurin-bin-21
 
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
