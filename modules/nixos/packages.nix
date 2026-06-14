@@ -36,6 +36,7 @@
 
   environment.systemPackages = with pkgs; [
     vim
+    nmap
     traceroute
     wget
     curl
