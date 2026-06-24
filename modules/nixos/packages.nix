@@ -37,6 +37,15 @@
   environment.systemPackages = with pkgs; [
     vim
     nmap
+    arp-scan
+    mtr
+    tcpdump
+    netcat
+    whois
+    iperf3
+    openssl
+    bandwhich
+    sslscan
     gh
     nixd
     vault

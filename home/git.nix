@@ -14,12 +14,19 @@
       diff.colorMoved = "zebra";
       merge.conflictstyle = "diff3";
       alias = {
-        st   = "status";
-        co   = "checkout";
-        br   = "branch";
-        lg   = "log --graph --oneline --decorate --all";
-        undo = "reset HEAD~1 --mixed";
-        wip  = "!git add -A && git commit -m 'WIP'";
+        st       = "status";
+        d        = "diff";
+        co       = "checkout";
+        br       = "branch";
+        lg       = "log --graph --oneline --decorate --all";
+        undo     = "reset HEAD~1 --mixed";
+        wip      = "!git add -A && git commit -m 'WIP'";
+        b        = "!f() { git fetch origin --prune && git checkout -b \"$1\" origin/main; }; f";
+        rebom    = "rebase origin/main";
+        foprebom = "!git fetch origin --prune && git rebase origin/main";
+        fop      = "push --force-with-lease";
+        gone     = "!git branch -v | grep '\\[gone\\]' | awk '{print $1}'";
+        cleanup  = "!git branch -v | grep '\\[gone\\]' | awk '{print $1}' | xargs git branch -D";
       };
     };
     ignores = [
