@@ -37,6 +37,10 @@
   environment.systemPackages = with pkgs; [
     vim
     nmap
+    gh
+    nixd
+    vault
+    bind
     traceroute
     wget
     curl
@@ -52,6 +56,7 @@
     krita
     gimp
     inkscape
+    pcsx2
     temurin-bin-8
     temurin-bin-11
     temurin-bin-21
