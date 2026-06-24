@@ -1,4 +1,6 @@
 { pkgs, ... }: {
+  catppuccin.flavor = "mocha";
+
   imports = [
     ./shell.nix
     ./git.nix
@@ -16,7 +18,6 @@
     httpie
     ripgrep
     fd
-    bat
     eza
     fzf
     jq

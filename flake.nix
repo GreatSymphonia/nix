@@ -20,9 +20,14 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    catppuccin = {
+      url = "github:catppuccin/nix/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, ... }:
+  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, ... }:
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
@@ -49,6 +54,7 @@
         {
           home-manager.sharedModules = [
             plasma-manager.homeModules.plasma-manager
+            catppuccin.homeModules.catppuccin
           ];
         }
         ./configuration.nix
@@ -63,6 +69,7 @@
       modules = [
         ./home
         plasma-manager.homeModules.plasma-manager
+        catppuccin.homeModules.catppuccin
         {
           home.username = "louis";
           home.homeDirectory = "/home/louis";
