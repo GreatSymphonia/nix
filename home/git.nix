@@ -27,6 +27,7 @@
         fop      = "push --force-with-lease";
         gone     = "!git branch -v | grep '\\[gone\\]' | awk '{print $1}'";
         cleanup  = "!git branch -v | grep '\\[gone\\]' | awk '{print $1}' | xargs git branch -D";
+        squash   = "!f() { base=$(git merge-base HEAD origin/main); if [ -n \"$1\" ]; then GIT_SEQUENCE_EDITOR='sed -i 2,\\$s/^pick/fixup/' git rebase -i \"$base\" && git commit --amend -m \"$1\"; else GIT_SEQUENCE_EDITOR='sed -i 2,\\$s/^pick/squash/' git rebase -i \"$base\"; fi; }; f";
       };
     };
     ignores = [
