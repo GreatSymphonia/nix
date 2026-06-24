@@ -11,6 +11,7 @@
     kdePackages.filelight  # visualiseur d'espace disque
     kdePackages.kcalc
     kdePackages.yakuake
+    kdePackages.partitionmanager
 
     satisfactorymodmanager
     zed
