@@ -31,6 +31,9 @@
     nextcloud-client
     pandoc
     zotero
+    parted
+    grub2_efi
+    dosfstools
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
