@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ pkgs, config, ... }: {
   fonts.fontconfig.enable = true;
 
   home.packages = with pkgs; [
@@ -28,7 +28,10 @@
       package = pkgs.catppuccin-cursors.mochaDark;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
-    gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
+    gtk4 = {
+      extraConfig.gtk-application-prefer-dark-theme = true;
+      theme = config.gtk.theme;
+    };
   };
 
   qt = {
