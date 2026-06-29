@@ -18,7 +18,6 @@
     ansible-lint
     fastfetch
     discord
-    signal-desktop
     slack
     onlyoffice-desktopeditors
     teams-for-linux

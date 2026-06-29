@@ -6,6 +6,7 @@
     ./git.nix
     ./editors.nix
     ./apps.nix
+    ./flatpak.nix
     ./theme.nix
     ./plasma.nix
     ./networkmanager.nix

@@ -25,9 +25,11 @@
       url = "github:catppuccin/nix/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-flatpak.url = "github:gmodena/nix-flatpak";
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, ... }:
+  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, ... }:
   let
     system = "x86_64-linux";
     pkgs = import nixpkgs {
@@ -55,6 +57,7 @@
           home-manager.sharedModules = [
             plasma-manager.homeModules.plasma-manager
             catppuccin.homeModules.catppuccin
+            nix-flatpak.homeManagerModules.nix-flatpak
           ];
         }
         ./configuration.nix

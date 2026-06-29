@@ -27,6 +27,9 @@
     };
     hardware.bolt.enable = true;
     printing.enable = true;
+    flatpak.enable = true;
   };
+
+  xdg.portal.enable = true;
 
 }
