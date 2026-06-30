@@ -10,7 +10,8 @@
     ];
 
     packages = [
-      { appId = "org.signal.Signal"; origin = "flathub"; }
+      { appId = "org.signal.Signal";        origin = "flathub"; }
+      { appId = "com.discordapp.Discord";   origin = "flathub"; }
     ];
   };
 }

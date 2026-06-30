@@ -17,7 +17,6 @@
     zed
     ansible-lint
     fastfetch
-    discord
     slack
     onlyoffice-desktopeditors
     teams-for-linux
@@ -33,7 +32,7 @@
     parted
     grub2_efi
     dosfstools
-    
+
 
     (wrapHelm kubernetes-helm {
       plugins = with pkgs.kubernetes-helmPlugins; [
@@ -43,7 +42,7 @@
         helm-git
       ];
     })
-    
+
     # krew
     kubelogin-oidc
     talosctl
@@ -74,12 +73,6 @@
       window-decoration = true;
       cursor-style      = "block";
       shell-integration = "bash";
-
-      # extraConfig = ''
-      #   keybind = super+alt+t=toggle_quick_terminal
-      #   quick-terminal-position = top
-      #   quick-terminal-size = 30%
-      # '';
     };
   };
 }

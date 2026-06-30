@@ -1,4 +1,4 @@
-{ ... }: {
+{ pkgs, ... }: {
   programs.git = {
     enable = true;
     settings = {
@@ -36,6 +36,14 @@
       ".DS_Store" "*.swp" ".direnv" ".env"
       "node_modules" "__pycache__" "*.pyc" ".venv" "result"
     ];
+  };
+
+  programs.gpg.enable = true;
+
+  services.gpg-agent = {
+    enable   = true;
+    pinentry.package = pkgs.pinentry-qt;
+    enableSshSupport = false;
   };
 
   programs.bat.enable = true;
