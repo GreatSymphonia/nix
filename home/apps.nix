@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ pkgs, unstable, ... }: {
   home.packages = with pkgs; [
     # Terminal
     ghostty
@@ -46,6 +46,7 @@
     # krew
     kubelogin-oidc
     talosctl
+    unstable.omnictl
     nil
   ];
 

@@ -54,6 +54,7 @@
       modules = [
         home-manager.nixosModules.home-manager
         {
+          home-manager.extraSpecialArgs = { unstable = unstablePkgs; };
           home-manager.sharedModules = [
             plasma-manager.homeModules.plasma-manager
             catppuccin.homeModules.catppuccin

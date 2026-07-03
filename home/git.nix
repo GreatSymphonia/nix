@@ -25,8 +25,9 @@
         wip      = "!git add -A && git commit -m 'WIP'";
         b        = "!f() { git fetch origin --prune && git checkout -b \"$1\" origin/main; }; f";
         rebom    = "rebase origin/main";
+        fop      = "fetch origin --prune";
         foprebom = "!git fetch origin --prune && git rebase origin/main";
-        fop      = "push --force-with-lease --force-if-includes";
+        pof      = "push --force-with-lease --force-if-includes";
         gone     = "!git branch -v | grep '\\[gone\\]' | awk '{print $1}'";
         cleanup  = "!git branch -v | grep '\\[gone\\]' | awk '{print $1}' | xargs -r git branch -D";
         squash   = "!f() { base=$(git merge-base HEAD origin/main); if [ -n \"$1\" ]; then GIT_SEQUENCE_EDITOR='sed -i 2,\\$s/^pick/fixup/' git rebase -i \"$base\" && git commit --amend -m \"$1\"; else GIT_SEQUENCE_EDITOR='sed -i 2,\\$s/^pick/squash/' git rebase -i \"$base\"; fi; }; f";
