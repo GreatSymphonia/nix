@@ -5,6 +5,7 @@
 
     settings = {
       theme = "dark";
+      effortLevel = "medium";
     };
   };
 }

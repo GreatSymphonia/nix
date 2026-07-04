@@ -74,6 +74,7 @@
         ./home
         plasma-manager.homeModules.plasma-manager
         catppuccin.homeModules.catppuccin
+        nix-flatpak.homeManagerModules.nix-flatpak
         {
           home.username = "louis";
           home.homeDirectory = "/home/louis";
