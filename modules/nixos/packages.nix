@@ -66,6 +66,8 @@
     gimp
     inkscape
     pcsx2
+    wineWow64Packages.stable
+    winetricks
     temurin-bin-8
     temurin-bin-11
     temurin-bin-21
