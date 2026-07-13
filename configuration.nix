@@ -4,7 +4,7 @@ let
   unstable = unstablePkgs;
 in {
   imports = [
-    ./modules/printer/brotherql570.nix
+    ./modules/printer/brother-ql570.nix
 
     ./hardware-configuration.nix
     ./modules/nixos/audio.nix
