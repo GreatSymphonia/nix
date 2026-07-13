@@ -1,5 +1,18 @@
 {
   "nodes": {
+    "brother-ql570-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783959164,
+        "narHash": "sha256-+2sL8/9eRKrTKvpc0YWpoWfWsAMkKPEiPzj/uiVcI7I=",
+        "path": "/var/lib/nixos-vendor/brother-ql570",
+        "type": "path"
+      },
+      "original": {
+        "path": "/var/lib/nixos-vendor/brother-ql570",
+        "type": "path"
+      }
+    },
     "catppuccin": {
       "inputs": {
         "nixpkgs": [
@@ -114,6 +127,7 @@
     },
     "root": {
       "inputs": {
+        "brother-ql570-src": "brother-ql570-src",
         "catppuccin": "catppuccin",
         "home-manager": "home-manager",
         "nix-flatpak": "nix-flatpak",

@@ -2,19 +2,18 @@
 , stdenv
 , gcc
 , cups
+, file
+, bash
+, coreutils
+, gnused
+, gnugrep
+, gawk
 , brotherQl570Sources
 }:
 
 let
-  cupswrapperSrc = builtins.path {
-    path = brotherQl570Sources.cupswrapper;
-    name = "cupswrapper-src";
-  };
-
-  lprSrc = builtins.path {
-    path = brotherQl570Sources.lpr;
-    name = "ql570lpr";
-  };
+  cupswrapperSrc = brotherQl570Sources.cupswrapper;
+  lprSrc = brotherQl570Sources.lpr;
 in
 
 stdenv.mkDerivation rec {
@@ -22,47 +21,110 @@ stdenv.mkDerivation rec {
   version = "1.0.1";
 
   dontUnpack = true;
-  dontConfigure = true;
 
   nativeBuildInputs = [
     gcc
   ];
 
+  buildInputs = [
+    cups
+    bash
+    coreutils
+    gnused
+    gnugrep
+    gawk
+    file
+  ];
+
   buildPhase = ''
+    runHook preBuild
+
     cp -r ${cupswrapperSrc} cupswrapper
     cp -r ${lprSrc} lpr
 
+    chmod -R u+w cupswrapper
+    chmod -R u+w lpr
+
+    cat > cupswrapper/brcupsconfig/brcupsconfig-patched.c <<'EOF'
+#include <stdlib.h>
+EOF
+
+    cat cupswrapper/brcupsconfig/brcupsconfig.c \
+      >> cupswrapper/brcupsconfig/brcupsconfig-patched.c
+
+    sed -i \
+      's/strcpy(output\[i\],p);/strncpy(output[i],p,29); output[i][29]=0;/' \
+      cupswrapper/brcupsconfig/brcupsconfig-patched.c
+
     gcc \
-      -O2 \
-      -Wall \
+      -O0 \
+      -U_FORTIFY_SOURCE \
+      -D_FORTIFY_SOURCE=0 \
+      -fno-stack-protector \
+      -Icupswrapper/brcupsconfig \
       -o brcupsconfpt1 \
-      cupswrapper/brcupsconfig/brcupsconfig.c
+      cupswrapper/brcupsconfig/brcupsconfig-patched.c
+
+    runHook postBuild
   '';
 
   installPhase = ''
+    runHook preInstall
+
+    BROTHER_PATH="${lib.makeBinPath [
+      coreutils
+      gnused
+      gnugrep
+      gawk
+      file
+      cups
+    ]}"
+
     mkdir -p $out
 
     #
-    # Installation du pilote Brother
+    # Brother tree
     #
-    cp -r lpr/opt $out/
+    mkdir -p $out/opt/brother/PTouch/ql570
 
-    #
-    # Reconstruction de brcupsconfpt1
-    #
+    cp -r lpr/* \
+      $out/opt/brother/PTouch/ql570/
+
+    cp -r cupswrapper/* \
+      $out/opt/brother/PTouch/ql570/
+
     mkdir -p \
       $out/opt/brother/PTouch/ql570/cupswrapper
 
-    install -Dm755 \
+    install -m755 \
       brcupsconfpt1 \
       $out/opt/brother/PTouch/ql570/cupswrapper/brcupsconfpt1
 
     #
-    # Patcher les chemins hardcodés
+    # Patch chemins hardcodés
     #
     substituteInPlace \
       $out/opt/brother/PTouch/ql570/lpd/filterql570 \
       --replace "/opt/brother" "$out/opt/brother"
+
+    #
+    # pstops n'existe pas dans /usr/bin sous NixOS
+    #
+    substituteInPlace \
+      $out/opt/brother/PTouch/ql570/lpd/filterql570 \
+      --replace 'PSTOPS_PATH="/usr/bin/pstops"' \
+                'PSTOPS_PATH="${cups}/bin/pstops"'
+
+    patchShebangs \
+      $out/opt/brother/PTouch/ql570/lpd/filterql570
+
+    #
+    # PATH pour les utilitaires GNU
+    #
+    sed -i '2i\
+export PATH='"${BROTHER_PATH}"':$PATH
+' \
+      $out/opt/brother/PTouch/ql570/lpd/filterql570
 
     #
     # PPD
@@ -72,13 +134,14 @@ stdenv.mkDerivation rec {
       $out/share/cups/model/brother_ql570_printer_en.ppd
 
     #
-    # Filtre CUPS
+    # Wrapper CUPS
     #
-    mkdir -p \
-      $out/lib/cups/filter
+    mkdir -p $out/lib/cups/filter
 
     cat > $out/lib/cups/filter/brother_lpdwrapper_ql570 <<EOF
-#!${stdenv.shell}
+#!${bash}/bin/bash
+
+export PATH=${BROTHER_PATH}:\$PATH
 
 PPDC=\$(printenv | sed -n 's/^PPD=//p')
 
@@ -86,7 +149,7 @@ if [ -z "\$PPDC" ]; then
   PPDC="$out/share/cups/model/brother_ql570_printer_en.ppd"
 fi
 
-RCFILE="/tmp/brql570rc_\$$"
+RCFILE="/tmp/brql570rc_\$\$"
 
 cp \
   "$out/opt/brother/PTouch/ql570/inf/brql570rc" \
@@ -115,8 +178,8 @@ fi
 cat "\$INPUT_PS" | \
   "$out/opt/brother/PTouch/ql570/lpd/filterql570" \
   "\$\$" \
-  "CUPS" \
-  "USB"
+  CUPS \
+  USB
 
 rm -f "\$INPUT_PS"
 rm -f "\$RCFILE"
@@ -126,11 +189,12 @@ EOF
 
     chmod 755 \
       $out/lib/cups/filter/brother_lpdwrapper_ql570
+
+    runHook postInstall
   '';
 
   meta = with lib; {
-    description = "Brother QL-570 proprietary driver";
-    license = licenses.gpl2Plus;
+    description = "Brother QL-570 driver";
     platforms = platforms.linux;
   };
 }
