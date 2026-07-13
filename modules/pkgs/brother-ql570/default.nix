@@ -68,7 +68,7 @@ EOF
       >> cupswrapper/brcupsconfig/brcupsconfig-patched.c
 
     #
-    # Avoid crashes in divide_media_token().
+    # Avoid unsafe strcpy() into fixed-size buffers.
     #
     sed -i \
       's/strcpy(media_command,p+strlen(MEDIAEQ1));/strncpy(media_command,p+strlen(MEDIAEQ1),sizeof(media_command)-1); media_command[sizeof(media_command)-1]=0;/' \
@@ -120,7 +120,7 @@ EOF
     cp -r lpr/opt $out/
 
     #
-    # Install Brother userland tools, including brprintconfpt1_ql570.
+    # Install Brother userland tools.
     #
     mkdir -p $out/bin
 
@@ -131,7 +131,8 @@ EOF
     fi
 
     #
-    # Ensure cupswrapper directory exists.
+    # Install rebuilt brcupsconfpt1, although the wrapper below does not call it
+    # for now because the legacy helper still tries to reach /opt/brother.
     #
     mkdir -p \
       $out/opt/brother/PTouch/ql570/cupswrapper
@@ -148,13 +149,19 @@ EOF
       --replace "/opt/brother" "$out/opt/brother"
 
     #
-    # Brother's script expects pstops in /usr/bin.
-    # On NixOS, pstops comes from psutils.
+    # Patch pstops path and any PATH=/usr/bin reset.
     #
-    substituteInPlace \
-      $out/opt/brother/PTouch/ql570/lpd/filterql570 \
-      --replace 'PSTOPS_PATH="/usr/bin/pstops"' \
-                "PSTOPS_PATH=\"${psutils}/bin/pstops\""
+    sed -i \
+      "s#/usr/bin/pstops#${psutils}/bin/pstops#g" \
+      $out/opt/brother/PTouch/ql570/lpd/filterql570
+
+    sed -i \
+      "s#PATH=/usr/bin#PATH=$BROTHER_PATH#g" \
+      $out/opt/brother/PTouch/ql570/lpd/filterql570
+
+    sed -i \
+      "s#PATH=\"/usr/bin\"#PATH=\"$BROTHER_PATH\"#g" \
+      $out/opt/brother/PTouch/ql570/lpd/filterql570
 
     #
     # Patch shebangs for shell scripts.
@@ -207,54 +214,77 @@ EOF
     #
     mkdir -p $out/lib/cups/filter
 
-    cat > $out/lib/cups/filter/brother_lpdwrapper_ql570 <<EOF
-#!${bash}/bin/bash
+    cat > $out/lib/cups/filter/brother_lpdwrapper_ql570 <<'EOF'
+#!@bash@/bin/bash
 
-export PATH=$BROTHER_PATH:\$PATH
+export PATH=@brother_path@:$PATH
 
-PPDC=\$(printenv | sed -n 's/^PPD=//p')
+PPDC=$(printenv | sed -n 's/^PPD=//p')
 
-if [ -z "\$PPDC" ]; then
-  PPDC="$out/share/cups/model/brother_ql570_printer_en.ppd"
+if [ -z "$PPDC" ]; then
+  PPDC="@out@/share/cups/model/brother_ql570_printer_en.ppd"
 fi
 
-RCFILE="/tmp/brql570rc_\$\$"
+RCFILE="/tmp/brql570rc_$$"
 
 cp \
-  "$out/opt/brother/PTouch/ql570/inf/brql570rc" \
-  "\$RCFILE"
+  "@out@/opt/brother/PTouch/ql570/inf/brql570rc" \
+  "$RCFILE"
 
-chmod 600 "\$RCFILE"
+chmod 600 "$RCFILE"
 
-export BRPRINTERRCFILE="\$RCFILE"
+export BRPRINTERRCFILE="$RCFILE"
 
-INPUT_PS=\$(mktemp)
+INPUT_PS=$(mktemp /tmp/ql570-input.XXXXXX)
 
-if [ \$# -ge 7 ]; then
-  cp "\$6" "\$INPUT_PS"
+if [ $# -ge 7 ]; then
+  cp "$6" "$INPUT_PS"
 else
-  cat > "\$INPUT_PS"
+  cat > "$INPUT_PS"
 fi
 
-"$out/opt/brother/PTouch/ql570/cupswrapper/brcupsconfpt1" \
+#
+# Use Brother's config helper. Ignore failure for now, but keep stderr silent.
+#
+"@out@/opt/brother/PTouch/ql570/cupswrapper/brcupsconfpt1" \
   ql570 \
-  "\$PPDC" \
+  "$PPDC" \
   0 \
-  "\$5 Copies=\$4" \
-  "\$BRPRINTERRCFILE" \
-  >/dev/null || true
+  "$5 Copies=$4" \
+  "$BRPRINTERRCFILE" \
+  >/dev/null 2>&1 || true
 
-cat "\$INPUT_PS" | \
-  "$out/opt/brother/PTouch/ql570/lpd/filterql570" \
-  "\$\$" \
+#
+# Force installed roll size for now: 62mm x 29mm.
+#
+if [ -n "$BRPRINTERRCFILE" ] && [ -f "$BRPRINTERRCFILE" ]; then
+  if grep -q '^MediaSize=' "$BRPRINTERRCFILE"; then
+    sed -i 's/^MediaSize=.*/MediaSize=62x29/' "$BRPRINTERRCFILE"
+  else
+    echo 'MediaSize=62x29' >> "$BRPRINTERRCFILE"
+  fi
+else
+  echo "ERROR: BRPRINTERRCFILE is missing" >&2
+  rm -f "$INPUT_PS"
+  exit 1
+fi
+
+cat "$INPUT_PS" | \
+  "@out@/opt/brother/PTouch/ql570/lpd/filterql570" \
+  "$$" \
   CUPS \
   USB
 
-rm -f "\$INPUT_PS"
-rm -f "\$RCFILE"
+rm -f "$INPUT_PS"
+rm -f "$RCFILE"
 
 exit 0
 EOF
+
+    substituteInPlace $out/lib/cups/filter/brother_lpdwrapper_ql570 \
+      --replace "@bash@" "${bash}" \
+      --replace "@brother_path@" "$BROTHER_PATH" \
+      --replace "@out@" "$out"
 
     chmod 755 \
       $out/lib/cups/filter/brother_lpdwrapper_ql570
