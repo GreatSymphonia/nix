@@ -4,6 +4,8 @@ let
   unstable = unstablePkgs;
 in {
   imports = [
+    ./modules/printer/brotherql570.nix
+
     ./hardware-configuration.nix
     ./modules/nixos/audio.nix
     ./modules/nixos/bluetooth.nix
@@ -12,7 +14,7 @@ in {
     ./modules/nixos/nix-core.nix
     ./modules/nixos/packages.nix
     ./modules/nixos/system-locale.nix
-    ./modules/nixos/printer.nix
+    # ./modules/nixos/printer.nix
     ./modules/nixos/user.nix
     ./modules/nixos/virtualisation.nix
   ];

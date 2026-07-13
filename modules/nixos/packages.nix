@@ -35,6 +35,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    file
     vim
     nmap
     arp-scan
