@@ -5,14 +5,15 @@ let
 in {
   imports = [
     ./hardware-configuration.nix
-    ./modules/nixos/boot.nix
-    ./modules/nixos/system-locale.nix
-    ./modules/nixos/desktop.nix
     ./modules/nixos/audio.nix
     ./modules/nixos/bluetooth.nix
-    ./modules/nixos/user.nix
-    ./modules/nixos/packages.nix
+    ./modules/nixos/boot.nix
+    ./modules/nixos/desktop.nix
     ./modules/nixos/nix-core.nix
+    ./modules/nixos/packages.nix
+    ./modules/nixos/system-locale.nix
+    ./modules/nixos/printer.nix
+    ./modules/nixos/user.nix
     ./modules/nixos/virtualisation.nix
   ];
 
