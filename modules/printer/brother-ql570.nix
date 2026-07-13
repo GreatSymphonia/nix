@@ -1,16 +1,13 @@
-# modules/printing/brother-ql570.nix
-
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 let
-  brotherQl570 = pkgs.callPackage ../pkgs/brother-ql570 { };
+  brotherQl570 =
+    pkgs.callPackage
+      ../pkgs/brother-ql570
+      {};
 in
 {
-  services.printing = {
-    enable = true;
-
-    drivers = [
-      brotherQl570
-    ];
-  };
+  services.printing.drivers = [
+    brotherQl570
+  ];
 }
