@@ -34,15 +34,15 @@
     nix-flatpak.url = "github:gmodena/nix-flatpak";
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, ... }:
+  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, brother-ql570-src, ... }:
   let
     system = "x86_64-linux";
     brotherQl570Sources = {
       cupswrapper =
-        /var/lib/nixos-vendor/brother-ql570/cupswrapper-ql570-src-1.1.1-1;
+        brother-ql570-src + "/cupswrapper-ql570-src-1.1.1-1";
 
       lpr =
-        /var/lib/nixos-vendor/brother-ql570/ql570lpr-1.0.1-0.i386;
+        brother-ql570-src + "/ql570lpr-1.0.1-0.i386";
     };
     pkgs = import nixpkgs {
       inherit system;
