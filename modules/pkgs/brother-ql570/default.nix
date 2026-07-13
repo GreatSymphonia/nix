@@ -4,15 +4,23 @@
 , cups
 }:
 
+let
+  cupswrapperSrc = builtins.path {
+    path = /var/lib/nixos-vendor/brother-ql570/cupswrapper-ql570-src-1.1.1-1;
+    name = "cupswrapper-src";
+  };
+
+  lprSrc = builtins.path {
+    path = /var/lib/nixos-vendor/brother-ql570/ql570lpr-1.0.1-0.i386;
+    name = "ql570lpr";
+  };
+in
+
 stdenv.mkDerivation rec {
   pname = "brother-ql570";
   version = "1.0.1";
 
-  src = builtins.path {
-    path = ./.;
-    name = "brother-ql570";
-  };
-
+  dontUnpack = true;
   dontConfigure = true;
 
   nativeBuildInputs = [
@@ -20,46 +28,36 @@ stdenv.mkDerivation rec {
   ];
 
   buildPhase = ''
-    echo "===== DEBUG ====="
-    pwd
-
-    echo "----- ls -----"
-    ls -la
-
-    echo "----- find -----"
-    find . | sort
-
-    echo "================="
+    cp -r ${cupswrapperSrc} cupswrapper
+    cp -r ${lprSrc} lpr
 
     gcc \
       -O2 \
       -Wall \
       -o brcupsconfpt1 \
-      ./cupswrapper-ql570-src-1.1.1-1/brcupsconfig/brcupsconfig.c
+      cupswrapper/brcupsconfig/brcupsconfig.c
   '';
 
   installPhase = ''
     mkdir -p $out
 
     #
-    # Fichiers du pilote LPR
+    # Installation du pilote Brother
     #
-    cp -r \
-      ql570lpr-1.0.1-0.i386/opt \
-      $out/
+    cp -r lpr/opt $out/
 
     #
-    # cupswrapper
+    # Reconstruction de brcupsconfpt1
     #
     mkdir -p \
       $out/opt/brother/PTouch/ql570/cupswrapper
 
     install -Dm755 \
-      cupswrapper-ql570-src-1.1.1-1/brcupsconfig/brcupsconfpt1 \
+      brcupsconfpt1 \
       $out/opt/brother/PTouch/ql570/cupswrapper/brcupsconfpt1
 
     #
-    # Patch des chemins Brother
+    # Patcher les chemins hardcodés
     #
     substituteInPlace \
       $out/opt/brother/PTouch/ql570/lpd/filterql570 \
@@ -69,7 +67,7 @@ stdenv.mkDerivation rec {
     # PPD
     #
     install -Dm644 \
-      cupswrapper-ql570-src-1.1.1-1/ppd/brother_ql570_printer_en.ppd \
+      cupswrapper/ppd/brother_ql570_printer_en.ppd \
       $out/share/cups/model/brother_ql570_printer_en.ppd
 
     #
@@ -130,8 +128,8 @@ EOF
   '';
 
   meta = with lib; {
-    description = "Brother QL-570 proprietary CUPS driver";
-    platforms = platforms.linux;
+    description = "Brother QL-570 proprietary driver";
     license = licenses.gpl2Plus;
+    platforms = platforms.linux;
   };
 }

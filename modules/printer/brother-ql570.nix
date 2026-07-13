@@ -7,7 +7,11 @@ let
       {};
 in
 {
-  services.printing.drivers = [
-    brotherQl570
-  ];
+  services.printing = {
+    enable = true;
+
+    drivers = [
+      brotherQl570
+    ];
+  };
 }
