@@ -12,7 +12,7 @@ stdenv.mkDerivation rec {
     path = ./.;
     name = "brother-ql570";
   };
-  
+
   dontConfigure = true;
 
   nativeBuildInputs = [
@@ -20,12 +20,18 @@ stdenv.mkDerivation rec {
   ];
 
   buildPhase = ''
-  echo "===== DEBUG ====="
-  pwd
-  find . -maxdepth 4 | sort
-  echo "================="
+    echo "===== DEBUG ====="
+    pwd
 
-  gcc \
+    echo "----- ls -----"
+    ls -la
+
+    echo "----- find -----"
+    find . | sort
+
+    echo "================="
+
+    gcc \
       -O2 \
       -Wall \
       -o brcupsconfpt1 \
