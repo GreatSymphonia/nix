@@ -32,6 +32,13 @@
   outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, ... }:
   let
     system = "x86_64-linux";
+    brotherQl570Sources = {
+      cupswrapper =
+        /var/lib/nixos-vendor/brother-ql570/cupswrapper-ql570-src-1.1.1-1;
+
+      lpr =
+        /var/lib/nixos-vendor/brother-ql570/ql570lpr-1.0.1-0.i386;
+    };
     pkgs = import nixpkgs {
       inherit system;
       config.allowUnfree = true;
@@ -49,7 +56,7 @@
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inherit unstablePkgs inputs;
+        inherit unstablePkgs inputs brotherQl570Sources;
       };
       modules = [
         home-manager.nixosModules.home-manager

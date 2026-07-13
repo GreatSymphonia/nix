@@ -2,16 +2,17 @@
 , stdenv
 , gcc
 , cups
+, brotherQl570Sources
 }:
 
 let
   cupswrapperSrc = builtins.path {
-    path = /var/lib/nixos-vendor/brother-ql570/cupswrapper-ql570-src-1.1.1-1;
+    path = brotherQl570Sources.cupswrapper;
     name = "cupswrapper-src";
   };
 
   lprSrc = builtins.path {
-    path = /var/lib/nixos-vendor/brother-ql570/ql570lpr-1.0.1-0.i386;
+    path = brotherQl570Sources.lpr;
     name = "ql570lpr";
   };
 in
