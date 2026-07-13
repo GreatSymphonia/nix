@@ -12,6 +12,8 @@ stdenv.mkDerivation rec {
     path = ./.;
     name = "brother-ql570";
   };
+  
+  dontConfigure = true;
 
   nativeBuildInputs = [
     gcc
