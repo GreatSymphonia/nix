@@ -7,8 +7,6 @@
     lazygit      # intégration git dans LazyVim
   ];
 
-  home.sessionVariables.EDITOR = "nvim";
-
   home.activation.lazyvimStarter = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     NVIM_CONFIG="$HOME/.config/nvim"
     if [ ! -d "$NVIM_CONFIG" ]; then

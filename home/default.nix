@@ -11,6 +11,7 @@
     ./plasma.nix
     ./networkmanager.nix
     ./claude-code.nix
+    ./nvim.nix
   ];
 
   home.packages = with pkgs; [
