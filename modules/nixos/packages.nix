@@ -72,6 +72,7 @@
     temurin-bin-8
     temurin-bin-11
     temurin-bin-21
+    unzip
 
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
