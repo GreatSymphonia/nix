@@ -74,6 +74,9 @@
     temurin-bin-21
     unzip
     cargo
+    dotnet
+    luarocks
+    go
 
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
