@@ -19,6 +19,7 @@
       obs-vkcapture
     ];
   };
+  programs.virt-manager.enable = true;
 
   nixpkgs.config.allowUnfree = true;
 
@@ -74,7 +75,6 @@
     temurin-bin-21
     unzip
     cargo
-    dotnet
     luarocks
     go
 
