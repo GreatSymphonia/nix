@@ -10,8 +10,9 @@
     ];
 
     packages = [
-      { appId = "org.signal.Signal";        origin = "flathub"; }
-      { appId = "com.discordapp.Discord";   origin = "flathub"; }
+      { appId = "org.signal.Signal";            origin = "flathub"; }
+      { appId = "com.discordapp.Discord";       origin = "flathub"; }
+      { appId = "me.drewol.Unnamed-SDVX-Clone"; origin = "flathub"; }
     ];
   };
 }
