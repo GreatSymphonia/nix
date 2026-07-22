@@ -14,5 +14,7 @@
       { appId = "com.discordapp.Discord";       origin = "flathub"; }
       { appId = "me.drewol.Unnamed-SDVX-Clone"; origin = "flathub"; }
     ];
+
+    overrides."me.drewol.Unnamed-SDVX-Clone".Context.devices = "input;";
   };
 }
