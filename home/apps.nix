@@ -43,6 +43,8 @@
       ];
     })
 
+    forgejo-cli
+
     # krew
     kubelogin-oidc
     talosctl
