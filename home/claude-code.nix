@@ -6,10 +6,10 @@
     settings = {
       theme = "dark";
       effortLevel = "medium";
-      "attribution": {
-        "pr": "",
-        "commit": ""
-      }
+      attribution = {
+        pr = "";
+        commit = "";
+      };
     };
   };
 }
