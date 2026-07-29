@@ -17,6 +17,7 @@ in {
     # ./modules/nixos/printer.nix
     ./modules/nixos/user.nix
     ./modules/nixos/virtualisation.nix
+    ./modules/nixos/android.nix
   ];
 
   # Home Manager
