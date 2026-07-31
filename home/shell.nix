@@ -23,7 +23,7 @@
       nixgit = "sudo sh -c 'cd /etc/nixos && git add -A && git commit -m ''wip'''";
       nixpush = "sudo sh -c 'cd /etc/nixos && git push'";
       hmcheck = "nix run path:/etc/nixos#home-manager -- build --flake path:/etc/nixos#louis@nixos --no-out-link";
-      hmrebuild = "nix run path:/etc/nixos#home-manager -- switch --flake path:/etc/nixos#louis@nixos";
+      hmrebuild = "nix run path:/etc/nixos#home-manager -- switch -b bak --flake path:/etc/nixos#louis@nixos";
       codenix = "sudo code /etc/nixos --no-sandbox --user-data-dir=/home/louis/vscode-sudo";
     };
 

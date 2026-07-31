@@ -66,6 +66,7 @@
       modules = [
         home-manager.nixosModules.home-manager
         {
+          home-manager.backupFileExtension = "bak";
           home-manager.extraSpecialArgs = { unstable = unstablePkgs; };
           home-manager.sharedModules = [
             plasma-manager.homeModules.plasma-manager
