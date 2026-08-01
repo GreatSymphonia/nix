@@ -40,6 +40,9 @@
         # github.copilot-chat
         anthropic.claude-code
 
+        # Qualité de code
+        sonarsource.sonarlint-vscode
+
         # Qualité de vie
         usernamehw.errorlens
       ];

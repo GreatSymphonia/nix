@@ -43,6 +43,8 @@
       ];
     })
 
+    sonar-scanner-cli
+
     forgejo-cli
 
     # krew
