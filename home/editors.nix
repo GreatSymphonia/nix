@@ -193,6 +193,15 @@
         "markdown-preview-enhanced.previewTheme" = "atom-dark.css";
         "vscode-kubernetes.log-viewer.destination" = "Terminal";
         "docker.extension.enableComposeLanguageServer" = false;
+        "vs-kubernetes"."vs-kubernetes.crd-code-completion" = "enabled";
+
+        # SonarQube — connected mode (token à entrer via l'UI, pas ici)
+        "sonarlint.connectedMode.connections.sonarqube" = [
+          {
+            connectionId = "etsmtl";
+            serverUrl    = "https://sonarqube.etsmtl.club";
+          }
+        ];
       };
     };
   };

@@ -1,5 +1,10 @@
 { config, inputs, pkgs, services, ... }:
 {
+  programs.java = {
+    enable = true;
+    package = pkgs.temurin-bin-21;
+  };
+
   programs.firefox.enable = true;
   programs.steam.enable = true;
   programs.wireshark = {
@@ -72,7 +77,6 @@
     winetricks
     temurin-bin-8
     temurin-bin-11
-    temurin-bin-21
     unzip
     cargo
     luarocks

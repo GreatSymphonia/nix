@@ -6,7 +6,6 @@
   services.xserver.videoDrivers = [ "displaylink" "modesetting" ];
   environment.variables = {
     KWIN_DRM_PREFER_COLOR_DEPTH = "24";
-    JAVA_HOME = "${pkgs.temurin-bin-21}/lib/openjdk";
   };
 
   services = {
