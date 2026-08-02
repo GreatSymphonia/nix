@@ -195,6 +195,9 @@
         "docker.extension.enableComposeLanguageServer" = false;
         "vs-kubernetes"."vs-kubernetes.crd-code-completion" = "enabled";
 
+        # SonarLint — JRE intégré incompatible avec NixOS, on pointe vers le système
+        "sonarlint.ls.javaHome" = "${pkgs.temurin-bin-21}";
+
         # SonarQube — connected mode (token à entrer via l'UI, pas ici)
         "sonarlint.connectedMode.connections.sonarqube" = [
           {

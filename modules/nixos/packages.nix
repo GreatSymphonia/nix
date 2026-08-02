@@ -1,8 +1,8 @@
-{ config, inputs, pkgs, services, ... }:
+{ config, inputs, lib, pkgs, services, ... }:
 {
   programs.java = {
     enable = true;
-    package = pkgs.temurin-bin-21;
+    package = lib.hiPrio pkgs.temurin-bin-21;
   };
 
   programs.firefox.enable = true;
