@@ -28,6 +28,11 @@
 
   nixpkgs.config.allowUnfree = true;
 
+  # Permet les paquets non-free pour root (nix shell, nix-env, etc.)
+  environment.etc."root/.config/nixpkgs/config.nix".text = ''
+    { allowUnfree = true; }
+  '';
+
   nix.settings = {
     substituters = [ "https://cache.nixos.org" ];
     trusted-public-keys = [

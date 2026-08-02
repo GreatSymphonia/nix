@@ -1,6 +1,8 @@
 { pkgs, ... }: {
   catppuccin.flavor = "mocha";
 
+  nixpkgs.config.allowUnfree = true;
+
   imports = [
     ./shell.nix
     ./git.nix
