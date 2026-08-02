@@ -27,6 +27,7 @@
 
         # Remote / Containers
         ms-vscode-remote.remote-ssh
+        ms-vscode-remote.remote-containers
         ms-vscode.remote-explorer
         ms-azuretools.vscode-docker
         ms-kubernetes-tools.vscode-kubernetes-tools
@@ -197,6 +198,7 @@
 
         # SonarLint — JRE intégré incompatible avec NixOS, on pointe vers le système
         "sonarlint.ls.javaHome" = "${pkgs.temurin-bin-21}";
+        "sonarlint.pathToNodeExecutable" = "${pkgs.nodejs}/bin/node";
 
         # SonarQube — connected mode (token à entrer via l'UI, pas ici)
         "sonarlint.connectedMode.connections.sonarqube" = [
