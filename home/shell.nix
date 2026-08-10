@@ -38,6 +38,12 @@
         alias ccat='/run/current-system/sw/bin/cat'
       fi
 
+      # SonarQube — charge le token depuis un fichier local hors-git (chmod 600).
+      # Créer le fichier avec: install -Dm600 /dev/stdin ~/.config/sonar-scanner/token <<< "TON_TOKEN"
+      if [ -r "$HOME/.config/sonar-scanner/token" ]; then
+        export SONAR_TOKEN="$(<"$HOME/.config/sonar-scanner/token")"
+      fi
+
       enixcfg() {
         local arg="$1"
         local subcmd="$1"

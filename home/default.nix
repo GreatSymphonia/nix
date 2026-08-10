@@ -41,6 +41,9 @@
     EDITOR  = "micro";
     VISUAL  = "micro";
     GTK_IM_MODULE = "simple";
+
+    # SonarQube — sonar-scanner CLI global config (voir shell.nix pour SONAR_TOKEN)
+    SONAR_HOST_URL = "https://sonarqube.etsmtl.club";
   };
 
   home.file.".config/micro/settings.json".text = ''
