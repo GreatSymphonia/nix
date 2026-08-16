@@ -3,7 +3,7 @@
     # Terminal
     ghostty
 
-    inputs.claude-desktop.packages.${pkgs.system}.claude-desktop-with-fhs
+    (pkgs.callPackage ./claude-desktop.nix { })
 
     # Dev GUI
     kdePackages.kate
