@@ -1,7 +1,9 @@
-{ pkgs, unstable, ... }: {
+{ pkgs, unstable, inputs, ... }: {
   home.packages = with pkgs; [
     # Terminal
     ghostty
+
+    inputs.claude-desktop.packages.${pkgs.system}.claude-desktop-with-fhs
 
     # Dev GUI
     kdePackages.kate

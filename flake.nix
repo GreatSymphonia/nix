@@ -32,6 +32,8 @@
     };
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
+
+    claude-desktop.url = "github:k3d3/claude-desktop-linux-flake";
   };
 
   outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, brother-ql570-src, ... }:
@@ -67,7 +69,7 @@
         home-manager.nixosModules.home-manager
         {
           home-manager.backupFileExtension = "bak";
-          home-manager.extraSpecialArgs = { unstable = unstablePkgs; };
+          home-manager.extraSpecialArgs = { unstable = unstablePkgs; inherit inputs; };
           home-manager.sharedModules = [
             plasma-manager.homeModules.plasma-manager
             catppuccin.homeModules.catppuccin
@@ -82,6 +84,7 @@
       inherit pkgs;
       extraSpecialArgs = {
         unstable = unstablePkgs;
+        inherit inputs;
       };
       modules = [
         ./home
