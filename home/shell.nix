@@ -14,10 +14,10 @@
       tree   = "eza --tree --icons";
       df     = "df -h";
       du     = "du -sh";
-      nixupdate  = "sudo nix flake update --flake /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#nixos";
+      nixupdate  = "sudo nix flake update --flake /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#nixos && nixsecureboot-check";
       nixcleanup = "sudo nix-collect-garbage -d";
-      nixrebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nixos";
-      nixboot = "sudo nixos-rebuild boot --flake /etc/nixos#nixos";
+      nixrebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nixos && nixsecureboot-check";
+      nixboot = "sudo nixos-rebuild boot --flake /etc/nixos#nixos && nixsecureboot-check";
       nixtest = "sudo nixos-rebuild test --flake /etc/nixos#nixos";
       nixcheck = "sudo nixos-rebuild build --flake /etc/nixos#nixos --show-trace";
       nixgit = "sudo sh -c 'cd /etc/nixos && git add -A && git commit -m ''wip'''";
@@ -43,6 +43,19 @@
       if [ -r "$HOME/.config/sonar-scanner/token" ]; then
         export SONAR_TOKEN="$(<"$HOME/.config/sonar-scanner/token")"
       fi
+
+      # Vérifie après chaque rebuild que les fichiers de boot NixOS sont bien
+      # signés (lanzaboote les signe automatiquement à l'activation) et que
+      # la chaîne Secure Boot de Windows (bootmgfw.efi, signé Microsoft) est
+      # toujours reconnue par le db enrôlé avec `sbctl enroll-keys --microsoft`.
+      nixsecureboot-check() {
+        if ! command -v sbctl >/dev/null 2>&1; then
+          echo "sbctl n'est pas installé, secure-boot pas encore configuré (voir doc secure-boot)." >&2
+          return 0
+        fi
+        echo "== Vérification Secure Boot (NixOS + Windows) sur /boot =="
+        sudo sbctl verify
+      }
 
       enixcfg() {
         local arg="$1"

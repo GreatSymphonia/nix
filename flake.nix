@@ -32,9 +32,14 @@
     };
 
     nix-flatpak.url = "github:gmodena/nix-flatpak";
+
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, brother-ql570-src, ... }:
+  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, lanzaboote, brother-ql570-src, ... }:
   let
     system = "x86_64-linux";
     brotherQl570Sources = {
@@ -65,6 +70,7 @@
       };
       modules = [
         home-manager.nixosModules.home-manager
+        lanzaboote.nixosModules.lanzaboote
         {
           home-manager.backupFileExtension = "bak";
           home-manager.extraSpecialArgs = { unstable = unstablePkgs; inherit inputs; };
