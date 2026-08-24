@@ -78,6 +78,7 @@
     gimp
     inkscape
     pcsx2
+    dolphin-emu
     wineWow64Packages.stable
     winetricks
     temurin-bin-8
