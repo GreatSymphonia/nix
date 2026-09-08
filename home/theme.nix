@@ -11,6 +11,9 @@
 
   gtk = {
     enable = true;
+    # Écrase toujours ~/.gtkrc-2.0 sans créer de .bak : évite que
+    # l'activation home-manager échoue quand un .bak d'un switch
+    gtk2.force = true;
     theme = {
       name    = "Catppuccin-Mocha-Standard-Blue-Dark";
       package = pkgs.catppuccin-gtk.override {

@@ -1,4 +1,4 @@
-{ config, inputs, lib, pkgs, services, ... }:
+{ config, inputs, lib, pkgs, services, unstablePkgs, ... }:
 {
   programs.java = {
     enable = true;
@@ -46,6 +46,8 @@
   };
 
   environment.systemPackages = with pkgs; [
+    unstablePkgs.claude-code
+
     file
     vim
     nmap

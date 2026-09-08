@@ -9,6 +9,7 @@
     ./flatpak.nix
     ./theme.nix
     ./plasma.nix
+    ./sway.nix
     ./networkmanager.nix
     ./claude-code.nix
     ./nvim.nix
