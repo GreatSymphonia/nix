@@ -20,6 +20,46 @@ let
   screenshotFull = pkgs.writeShellScriptBin "screenshot-full" ''
     ${pkgs.grim}/bin/grim - | ${pkgs.swappy}/bin/swappy -f -
   '';
+  # Menu de session "à la KDE" (Leave... de l'application launcher) : un
+  # wofi dmenu avec verrouillage / suspension / déconnexion / redémarrage /
+  # extinction. Le choix est fait par sélection explicite dans wofi, donc
+  # pas de double confirmation nécessaire.
+  sessionMenu = pkgs.writeShellScriptBin "session-menu" ''
+    set -euo pipefail
+    choice=$(printf '%s\n' \
+      " Verrouiller" \
+      " Suspendre" \
+      " Déconnexion" \
+      " Redémarrer" \
+      " Éteindre" \
+      | ${pkgs.wofi}/bin/wofi --dmenu --prompt "Session" --width 300 --height 250)
+    case "$choice" in
+      *Verrouiller*)  exec ${lock} ;;
+      *Suspendre*)    exec ${pkgs.systemd}/bin/systemctl suspend ;;
+      *Déconnexion*)  exec ${pkgs.sway}/bin/swaymsg exit ;;
+      *Redémarrer*)   exec ${pkgs.systemd}/bin/systemctl reboot ;;
+      *Éteindre*)     exec ${pkgs.systemd}/bin/systemctl poweroff ;;
+    esac
+  '';
+  # Lanceur SSH "à la rofi" : liste les hôtes déclarés dans ~/.ssh/config
+  # (entrées "Host" sans motif générique) et ouvre un terminal connecté à
+  # l'hôte choisi, comme le ferait un lanceur d'applications pour une app.
+  sshMenu = pkgs.writeShellScriptBin "ssh-menu" ''
+    set -euo pipefail
+    config="$HOME/.ssh/config"
+    hosts=""
+    if [ -r "$config" ]; then
+      hosts=$(${pkgs.gawk}/bin/awk 'tolower($1) == "host" { for (i = 2; i <= NF; i++) print $i }' "$config" \
+        | ${pkgs.gnugrep}/bin/grep -vE '[*?]' \
+        | sort -u)
+    fi
+    if [ -z "$hosts" ]; then
+      ${pkgs.libnotify}/bin/notify-send "SSH" "Aucun hôte trouvé dans ~/.ssh/config"
+      exit 0
+    fi
+    host=$(printf '%s\n' "$hosts" | ${pkgs.wofi}/bin/wofi --dmenu --prompt "SSH" --width 300 --height 300)
+    [ -n "$host" ] && exec ${terminal} -e ${pkgs.openssh}/bin/ssh "$host"
+  '';
   # Change le focus dans la direction donnée, puis place le curseur dans le
   # coin inférieur droit (avec une marge) de la fenêtre nouvellement focus,
   # pour que la souris ne saute jamais au centre.
@@ -85,11 +125,11 @@ let
       status=Unknown
     fi
 
-    icons=("" "" "" "" "")
+    icons=($'' $'' $'' $'' $'')
     idx=$(( capacity * 5 / 101 ))
     [ "$idx" -gt 4 ] && idx=4
     icon="''${icons[$idx]}"
-    [ "$status" = "Charging" ] && icon=" $icon"
+    [ "$status" = "Charging" ] && icon=$' '"$icon"
 
     if ${pkgs.sway}/bin/swaymsg -t get_tree \
         | ${pkgs.jq}/bin/jq -e --arg a "$app_id" \
@@ -164,6 +204,12 @@ in
     cyclePowerProfile
     batteryStatus
     power-profiles-daemon
+    sessionMenu
+    sshMenu
+    gawk
+    gnugrep
+    libnotify
+    openssh
   ];
 
   wayland.windowManager.sway = {
@@ -245,8 +291,12 @@ in
 
       # ======================= Raccourcis (calqués sur KDE) ===================
 
-      # Déconnexion — Ctrl+Alt+Del comme sous KDE.
-      bindsym Ctrl+Alt+Delete exec swaynag -m 'Quitter Sway ?' -b 'Quitter' 'swaymsg exit'
+      # Menu de session (verrouiller/suspendre/déconnexion/redémarrer/
+      # éteindre) — Ctrl+Alt+Del comme le "Leave..." de KDE.
+      bindsym Ctrl+Alt+Delete exec ${sessionMenu}/bin/session-menu
+
+      # Lanceur SSH — liste les hôtes de ~/.ssh/config dans wofi.
+      bindsym $mod+Shift+s exec ${sshMenu}/bin/ssh-menu
 
       # Lanceur — Meta seul ouvre wofi, comme KRunner sous KDE (Meta seul).
       # On utilise le keysym littéral (Super_L/Super_R) plutôt que $mod :
@@ -374,7 +424,7 @@ in
       };
       backlight = {
         format = "{icon}";
-        format-icons = [ "" "" "" "" "" ];
+        format-icons = [ "" "" "" "" "" ];
         tooltip-format = "{percent}%";
       };
       tray.spacing = 10;
