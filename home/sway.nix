@@ -88,16 +88,39 @@ let
   # réellement swayidle (protocole idle-inhibit Wayland), contrairement à
   # systemd-inhibit qui n'agit que sur logind.
   idleInhibitDummyAppId = "idle-inhibitor-dummy";
+  # Ghostty ignore l'option "class" (avertissement "invalid 'class' in
+  # config") : sous Wayland son app_id reste toujours "com.mitchellh.ghostty",
+  # impossible à personnaliser en CLI. La fenêtre factice est donc repérée
+  # par son titre (--title), pas par app_id.
   toggleIdleInhibit = pkgs.writeShellScriptBin "toggle-idle-inhibit" ''
     set -euo pipefail
-    app_id="${idleInhibitDummyAppId}"
-    if ${pkgs.sway}/bin/swaymsg -t get_tree \
-        | ${pkgs.jq}/bin/jq -e --arg a "$app_id" \
-            '.. | objects | select(.app_id? == $a)' >/dev/null; then
-      ${pkgs.sway}/bin/swaymsg "[app_id=\"$app_id\"] kill"
+    title="${idleInhibitDummyAppId}"
+    pid=$(${pkgs.sway}/bin/swaymsg -t get_tree \
+      | ${pkgs.jq}/bin/jq -r --arg t "$title" \
+          '[.. | objects | select(.name? == $t) | .pid] | first // empty')
+    if [ -n "$pid" ]; then
+      # `swaymsg kill` (fermeture "propre") reste bloqué indéfiniment :
+      # Ghostty affiche une confirmation "processus encore actif" pour la
+      # commande sleep infinity, invisible puisque la fenêtre est dans le
+      # scratchpad. On tue donc directement le process par pid.
+      kill -9 "$pid" 2>/dev/null || true
     else
-      ${pkgs.ghostty}/bin/ghostty --class="$app_id" --title="$app_id" -e sleep infinity &
+      ${pkgs.ghostty}/bin/ghostty --title="$title" -e sleep infinity &
       disown
+      # `for_window` s'évalue au moment où sway mappe la fenêtre, avant que
+      # Ghostty n'ait fini d'appliquer --title (race classique) : on attend
+      # activement que la fenêtre apparaisse sous ce titre, puis on applique
+      # inhibit_idle + scratchpad nous-mêmes plutôt que de compter sur une
+      # règle statique.
+      for _ in $(seq 1 20); do
+        if ${pkgs.sway}/bin/swaymsg -t get_tree \
+            | ${pkgs.jq}/bin/jq -e --arg t "$title" \
+                '.. | objects | select(.name? == $t)' >/dev/null; then
+          ${pkgs.sway}/bin/swaymsg "[title=\"^$title\$\"] inhibit_idle open, move to scratchpad"
+          break
+        fi
+        sleep 0.1
+      done
     fi
     ${pkgs.procps}/bin/pkill -RTMIN+8 waybar || true
   '';
@@ -115,7 +138,7 @@ let
   '';
   batteryStatus = pkgs.writeShellScriptBin "battery-status" ''
     set -euo pipefail
-    app_id="${idleInhibitDummyAppId}"
+    title="${idleInhibitDummyAppId}"
     bat_dir=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1 || true)
     if [ -n "$bat_dir" ]; then
       capacity=$(cat "$bat_dir/capacity" 2>/dev/null || echo 0)
@@ -132,8 +155,8 @@ let
     [ "$status" = "Charging" ] && icon=$' '"$icon"
 
     if ${pkgs.sway}/bin/swaymsg -t get_tree \
-        | ${pkgs.jq}/bin/jq -e --arg a "$app_id" \
-            '.. | objects | select(.app_id? == $a)' >/dev/null; then
+        | ${pkgs.jq}/bin/jq -e --arg t "$title" \
+            '.. | objects | select(.name? == $t)' >/dev/null; then
       inhibited=true
       icon="$icon "
     else
@@ -249,15 +272,12 @@ in
         natural_scroll enabled
       }
 
-      # Fenêtre factice utilisée par l'icône batterie de waybar (clic
-      # molette) pour inhiber la veille automatique : `inhibit_idle open`
-      # bloque swayidle tant que la fenêtre existe, qu'elle soit visible ou
-      # non ; on la pousse donc dans le scratchpad pour qu'elle ne s'affiche
-      # jamais.
-      for_window [app_id="^${idleInhibitDummyAppId}$"] {
-        inhibit_idle open
-        move to scratchpad
-      }
+      # La fenêtre factice utilisée par l'icône batterie de waybar (clic
+      # molette, inhibition de la veille) est gérée entièrement dans
+      # toggleIdleInhibit ci-dessus : `for_window` s'évalue trop tôt (avant
+      # que Ghostty n'ait appliqué --title) pour cibler cette fenêtre de
+      # façon fiable, donc inhibit_idle/scratchpad sont appliqués par le
+      # script lui-même une fois la fenêtre confirmée mappée.
 
       # --- Apparence ---------------------------------------------------------
       default_border pixel 2
@@ -400,7 +420,6 @@ in
       # vrai menu interactif au clic (réseaux Wi-Fi, sorties audio), comme
       # les applets Plasma. Les modules restants sont réduits à l'icône.
       modules-right = [
-        "backlight"
         "custom/battery"
         "tray"
       ];
@@ -421,11 +440,6 @@ in
         signal = 8;
         on-click = "${cyclePowerProfile}/bin/cycle-power-profile";
         on-click-middle = "${toggleIdleInhibit}/bin/toggle-idle-inhibit";
-      };
-      backlight = {
-        format = "{icon}";
-        format-icons = [ "" "" "" "" "" ];
-        tooltip-format = "{percent}%";
       };
       tray.spacing = 10;
     };
@@ -466,7 +480,6 @@ in
       }
 
       #mode,
-      #backlight,
       #custom-battery,
       #tray {
         color: @text;
