@@ -2,13 +2,140 @@
 
 let
   terminal = "${pkgs.ghostty}/bin/ghostty";
-  menu = "${pkgs.wofi}/bin/wofi --show drun";
   lock = "${pkgs.swaylock}/bin/swaylock -f";
+  # Bascule wofi : le ferme s'il est déjà ouvert plutôt que d'en relancer
+  # une nouvelle instance à chaque appui.
+  toggleLauncher = pkgs.writeShellScriptBin "toggle-launcher" ''
+    # Le wrapper Nix renomme le process en ".wofi-wrapped" (visible dans
+    # /proc/*/comm), pas "wofi" — pkill -x doit cibler ce nom-là.
+    if ${pkgs.procps}/bin/pkill -x .wofi-wrapped; then
+      exit 0
+    fi
+    exec ${pkgs.wofi}/bin/wofi --show drun
+  '';
+  menu = "${toggleLauncher}/bin/toggle-launcher";
   screenshotRegion = pkgs.writeShellScriptBin "screenshot-region" ''
     ${pkgs.grim}/bin/grim -g "$(${pkgs.slurp}/bin/slurp)" - | ${pkgs.swappy}/bin/swappy -f -
   '';
   screenshotFull = pkgs.writeShellScriptBin "screenshot-full" ''
     ${pkgs.grim}/bin/grim - | ${pkgs.swappy}/bin/swappy -f -
+  '';
+  # Change le focus dans la direction donnée, puis place le curseur dans le
+  # coin inférieur droit (avec une marge) de la fenêtre nouvellement focus,
+  # pour que la souris ne saute jamais au centre.
+  focusWarp = pkgs.writeShellScriptBin "focus-warp" ''
+    set -euo pipefail
+    ${pkgs.sway}/bin/swaymsg focus "$1"
+    read -r x y w h < <(
+      ${pkgs.sway}/bin/swaymsg -t get_tree \
+        | ${pkgs.jq}/bin/jq -r '.. | select(.focused? == true) | "\(.rect.x) \(.rect.y) \(.rect.width) \(.rect.height)"' \
+        | head -n1
+    )
+    margin=25
+    ${pkgs.sway}/bin/swaymsg seat seat0 cursor set "$((x + w - margin))" "$((y + h - margin))"
+  '';
+  # "focus next/prev" ne cycle que parmi les enfants du même conteneur : avec
+  # un seul écran = un seul conteneur par sortie, il n'y a rien à parcourir.
+  # Ce script construit la liste de toutes les fenêtres de l'arbre (tous
+  # écrans/workspaces confondus) et fait un vrai Alt+Tab global.
+  # Icône batterie "à la KDE" : clic molette bascule l'inhibition de la mise
+  # en veille automatique (verrouillage + dpms de swayidle), clic gauche
+  # change de profil d'alimentation (secondaire).
+  #
+  # L'inhibition passe par une fenêtre factice invisible taguée
+  # app_id=idle-inhibitor-dummy, avec la règle `inhibit_idle open` dans la
+  # config sway (voir extraConfig) : c'est le seul mécanisme qui bloque
+  # réellement swayidle (protocole idle-inhibit Wayland), contrairement à
+  # systemd-inhibit qui n'agit que sur logind.
+  idleInhibitDummyAppId = "idle-inhibitor-dummy";
+  toggleIdleInhibit = pkgs.writeShellScriptBin "toggle-idle-inhibit" ''
+    set -euo pipefail
+    app_id="${idleInhibitDummyAppId}"
+    if ${pkgs.sway}/bin/swaymsg -t get_tree \
+        | ${pkgs.jq}/bin/jq -e --arg a "$app_id" \
+            '.. | objects | select(.app_id? == $a)' >/dev/null; then
+      ${pkgs.sway}/bin/swaymsg "[app_id=\"$app_id\"] kill"
+    else
+      ${pkgs.ghostty}/bin/ghostty --class="$app_id" --title="$app_id" -e sleep infinity &
+      disown
+    fi
+    ${pkgs.procps}/bin/pkill -RTMIN+8 waybar || true
+  '';
+  cyclePowerProfile = pkgs.writeShellScriptBin "cycle-power-profile" ''
+    set -euo pipefail
+    ppc=${pkgs.power-profiles-daemon}/bin/powerprofilesctl
+    current=$("$ppc" get 2>/dev/null || echo balanced)
+    case "$current" in
+      performance) next=power-saver ;;
+      power-saver) next=balanced ;;
+      *) next=performance ;;
+    esac
+    "$ppc" set "$next" 2>/dev/null || true
+    ${pkgs.procps}/bin/pkill -RTMIN+8 waybar || true
+  '';
+  batteryStatus = pkgs.writeShellScriptBin "battery-status" ''
+    set -euo pipefail
+    app_id="${idleInhibitDummyAppId}"
+    bat_dir=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1 || true)
+    if [ -n "$bat_dir" ]; then
+      capacity=$(cat "$bat_dir/capacity" 2>/dev/null || echo 0)
+      status=$(cat "$bat_dir/status" 2>/dev/null || echo Unknown)
+    else
+      capacity=100
+      status=Unknown
+    fi
+
+    icons=("" "" "" "" "")
+    idx=$(( capacity * 5 / 101 ))
+    [ "$idx" -gt 4 ] && idx=4
+    icon="''${icons[$idx]}"
+    [ "$status" = "Charging" ] && icon=" $icon"
+
+    if ${pkgs.sway}/bin/swaymsg -t get_tree \
+        | ${pkgs.jq}/bin/jq -e --arg a "$app_id" \
+            '.. | objects | select(.app_id? == $a)' >/dev/null; then
+      inhibited=true
+      icon="$icon "
+    else
+      inhibited=false
+    fi
+
+    profile=$(${pkgs.power-profiles-daemon}/bin/powerprofilesctl get 2>/dev/null || echo "")
+
+    tooltip="''${capacity}% (''${status})"
+    [ -n "$profile" ] && tooltip="''${tooltip}
+Profil : ''${profile} (clic gauche pour changer)"
+    if [ "$inhibited" = true ]; then
+      tooltip="''${tooltip}
+Veille automatique désactivée (clic molette pour réactiver)"
+      class=inhibited
+    else
+      tooltip="''${tooltip}
+Clic molette : désactiver la veille/le verrouillage automatique"
+      class=$(echo "$status" | ${pkgs.coreutils}/bin/tr '[:upper:] ' '[:lower:]-')
+    fi
+
+    ${pkgs.jq}/bin/jq -n --arg text "$icon" --arg tooltip "$tooltip" \
+      --arg class "$class" --argjson percentage "$capacity" \
+      '{text: $text, tooltip: $tooltip, class: $class, percentage: $percentage}'
+  '';
+  altTab = pkgs.writeShellScriptBin "alt-tab" ''
+    set -euo pipefail
+    dir="''${1:-next}"
+    tree=$(${pkgs.sway}/bin/swaymsg -t get_tree)
+    ids=$(echo "$tree" | ${pkgs.jq}/bin/jq -c '[.. | objects | select(.pid != null) | .id]')
+    current=$(echo "$tree" | ${pkgs.jq}/bin/jq '.. | objects | select(.focused? == true) | .id')
+    target=$(echo "$ids" | ${pkgs.jq}/bin/jq --argjson cur "$current" --arg dir "$dir" '
+      . as $a
+      | ($a | index($cur)) as $i
+      | if ($a | length) == 0 then empty
+        elif $i == null then $a[0]
+        elif $dir == "prev" then $a[($i - 1 + ($a|length)) % ($a|length)]
+        else $a[($i + 1) % ($a|length)]
+        end
+    ')
+    [ -n "$target" ] && ${pkgs.sway}/bin/swaymsg "[con_id=$target] focus"
+    exit 0
   '';
 in
 {
@@ -24,9 +151,19 @@ in
     brightnessctl
     playerctl
     pavucontrol
+    jq
+    networkmanagerapplet
+    pasystray
     kdePackages.polkit-kde-agent-1
     screenshotRegion
     screenshotFull
+    focusWarp
+    altTab
+    toggleLauncher
+    toggleIdleInhibit
+    cyclePowerProfile
+    batteryStatus
+    power-profiles-daemon
   ];
 
   wayland.windowManager.sway = {
@@ -40,10 +177,6 @@ in
 
     extraConfig = ''
       set $mod Mod4
-      set $left h
-      set $down j
-      set $up k
-      set $right l
 
       font pango:FiraCode Nerd Font 10
 
@@ -62,11 +195,22 @@ in
       output * bg /home/louis/Pictures/Wallpaper.jpg fill
 
       input type:keyboard {
-        xkb_layout us(intl)
+        xkb_layout "ca"
+        xkb_variant "multix"
       }
       input type:touchpad {
         tap enabled
         natural_scroll enabled
+      }
+
+      # Fenêtre factice utilisée par l'icône batterie de waybar (clic
+      # molette) pour inhiber la veille automatique : `inhibit_idle open`
+      # bloque swayidle tant que la fenêtre existe, qu'elle soit visible ou
+      # non ; on la pousse donc dans le scratchpad pour qu'elle ne s'affiche
+      # jamais.
+      for_window [app_id="^${idleInhibitDummyAppId}$"] {
+        inhibit_idle open
+        move to scratchpad
       }
 
       # --- Apparence ---------------------------------------------------------
@@ -79,20 +223,37 @@ in
       # --- Barre : waybar remplace les panneaux Plasma top/bottom ------------
       bar {
         swaybar_command waybar
+        output "DP-9"
       }
 
       # --- Démarrage automatique ---------------------------------------------
       exec ${pkgs.mako}/bin/mako
       exec ${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1
+      # Trousseau KDE (org.freedesktop.secrets) — sous Plasma, kwalletd est
+      # démarré par le login PAM (auto-déverrouillé), mais ce mécanisme ne
+      # s'accroche pas correctement à la session sway : le process reste
+      # bloqué sans jamais s'enregistrer sur le bus D-Bus. On le relance
+      # explicitement ici ; il réutilise le même portefeuille
+      # (~/.config/kwalletrc, ~/.local/share/kwalletd/kdewallet.kwl) et
+      # demandera le mot de passe au premier accès (Claude, etc.).
+      exec ${pkgs.kdePackages.kwallet}/bin/kwalletd6
+      # Icônes de tray avec menus interactifs (équivalent des applets Plasma
+      # réseau / audio) : cliquer donne un vrai menu (réseaux Wi-Fi,
+      # sorties audio, volume), pas juste du texte dans la barre.
+      exec ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator
+      exec ${pkgs.pasystray}/bin/pasystray
 
       # ======================= Raccourcis (calqués sur KDE) ===================
 
-      # Verrouillage / déconnexion — Meta+L et Ctrl+Alt+Del comme sous KDE.
-      bindsym $mod+l exec ${lock}
+      # Déconnexion — Ctrl+Alt+Del comme sous KDE.
       bindsym Ctrl+Alt+Delete exec swaynag -m 'Quitter Sway ?' -b 'Quitter' 'swaymsg exit'
 
       # Lanceur — Meta seul ouvre wofi, comme KRunner sous KDE (Meta seul).
-      bindsym --release $mod exec ${menu}
+      # On utilise le keysym littéral (Super_L/Super_R) plutôt que $mod :
+      # "bindsym --release $mod" (l'alias de modificateur) est peu fiable
+      # pour détecter un appui seul, contrairement au keysym direct.
+      bindsym --release Super_L exec ${menu}
+      bindsym --release Super_R exec ${menu}
       # Alt+F1 — équivalent du "activate application launcher" Plasma.
       bindsym Mod1+F1 exec ${menu}
 
@@ -103,26 +264,30 @@ in
       bindsym Mod1+F4 kill
 
       # Navigation entre fenêtres — Alt+Tab / Alt+Shift+Tab, comme
-      # "Walk Through Windows" sous KWin. Sway n'a pas de pile MRU native :
-      # ceci fait défiler les fenêtres du groupe courant dans l'ordre du
-      # layout, pas dans l'ordre d'utilisation récente comme KWin.
-      bindsym Mod1+Tab focus next
-      bindsym Mod1+Shift+Tab focus prev
+      # "Walk Through Windows" sous KWin. "focus next/prev" natif de sway ne
+      # cycle que parmi les enfants du même conteneur (rien à faire s'il n'y
+      # a qu'une fenêtre par écran) : alt-tab construit une liste de toutes
+      # les fenêtres, tous écrans confondus.
+      bindsym Mod1+Tab exec ${altTab}/bin/alt-tab next
+      bindsym Mod1+Shift+Tab exec ${altTab}/bin/alt-tab prev
 
-      # Focus / déplacement de fenêtres (équivalent hjkl + flèches).
-      bindsym $mod+$left  focus left
-      bindsym $mod+$down  focus down
-      bindsym $mod+$up    focus up
-      bindsym $mod+$right focus right
-      bindsym $mod+Left  focus left
-      bindsym $mod+Down  focus down
-      bindsym $mod+Up    focus up
-      bindsym $mod+Right focus right
+      # Focus / déplacement de fenêtres — flèches uniquement (pas de hjkl).
+      # "l" reste réservé au verrouillage (Meta+L comme sous KDE).
+      # Le focus passe par focus-warp : après le changement de focus, la
+      # souris est replacée dans le coin inférieur droit de la fenêtre
+      # focus (à ~25px des bords) plutôt qu'au centre.
+      bindsym $mod+Left  exec ${focusWarp}/bin/focus-warp left
+      bindsym $mod+Down  exec ${focusWarp}/bin/focus-warp down
+      bindsym $mod+Up    exec ${focusWarp}/bin/focus-warp up
+      bindsym $mod+Right exec ${focusWarp}/bin/focus-warp right
 
-      bindsym $mod+Shift+$left  move left
-      bindsym $mod+Shift+$down  move down
-      bindsym $mod+Shift+$up    move up
-      bindsym $mod+Shift+$right move right
+      bindsym $mod+Shift+Left  move left
+      bindsym $mod+Shift+Down  move down
+      bindsym $mod+Shift+Up    move up
+      bindsym $mod+Shift+Right move right
+
+      # Verrouillage — Meta+L comme sous KDE.
+      bindsym $mod+l exec ${lock}
 
       # Plein écran — le plus proche de "Window Maximize" (Meta+PgUp) en
       # tuilé. Meta+PgDown n'a pas d'équivalent "minimize" en tuilé : mappé
@@ -135,10 +300,10 @@ in
       bindsym $mod+Shift+space floating toggle
       bindsym $mod+r mode "resize"
       mode "resize" {
-        bindsym $left  resize shrink width 20px
-        bindsym $down  resize grow height 20px
-        bindsym $up    resize shrink height 20px
-        bindsym $right resize grow width 20px
+        bindsym Left  resize shrink width 20px
+        bindsym Down  resize grow height 20px
+        bindsym Up    resize shrink height 20px
+        bindsym Right resize grow width 20px
         bindsym Escape mode "default"
         bindsym Return mode "default"
       }
@@ -177,47 +342,101 @@ in
       layer = "top";
       position = "top";
       height = 24;
+      output = [ "DP-9" ];
       modules-left = [ "sway/workspaces" "sway/mode" ];
       modules-center = [ "clock" ];
+      # Audio et réseau ne sont plus des modules texte waybar : nm-applet et
+      # pasystray (démarrés via exec) apparaissent dans le tray avec un
+      # vrai menu interactif au clic (réseaux Wi-Fi, sorties audio), comme
+      # les applets Plasma. Les modules restants sont réduits à l'icône.
       modules-right = [
-        "idle_inhibitor"
-        "pulseaudio"
-        "network"
         "backlight"
-        "battery"
-        "bluetooth"
+        "custom/battery"
         "tray"
       ];
 
       "sway/workspaces".disable-scroll = true;
       clock = {
-        format = "{:%Y-%m-%d %H:%M}";
+        format = "{:%H:%M}";
         tooltip-format = "{calendar}";
       };
-      pulseaudio = {
-        format = "{icon} {volume}%";
-        format-muted = "🔇";
-        format-icons = { default = [ "🔈" "🔉" "🔊" ]; };
-        on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
+      # Icône batterie "à la KDE" : clic molette = désactive/réactive la
+      # veille (verrouillage + dpms) automatique ; clic gauche = change de
+      # profil d'alimentation (secondaire). Voir toggleIdleInhibit /
+      # cyclePowerProfile / batteryStatus dans extraConfig ci-dessus.
+      "custom/battery" = {
+        exec = "${batteryStatus}/bin/battery-status";
+        return-type = "json";
+        interval = 15;
+        signal = 8;
+        on-click = "${cyclePowerProfile}/bin/cycle-power-profile";
+        on-click-middle = "${toggleIdleInhibit}/bin/toggle-idle-inhibit";
       };
-      network = {
-        format-wifi = "📶 {essid}";
-        format-ethernet = "🖧 {ipaddr}";
-        format-disconnected = "⚠ déconnecté";
-      };
-      battery = {
-        format = "{icon} {capacity}%";
+      backlight = {
+        format = "{icon}";
         format-icons = [ "" "" "" "" "" ];
+        tooltip-format = "{percent}%";
       };
-      backlight.format = "☀ {percent}%";
-      bluetooth.format = "";
-      tray.spacing = 8;
+      tray.spacing = 10;
     };
 
     style = ''
       * {
-        font-family: "FiraCode Nerd Font";
+        /* Fira Code pour le texte ; repli sur la variante Nerd Font pour
+           les glyphes d'icônes (batterie, rétroéclairage) qu'elle ne
+           contient pas. */
+        font-family: "Fira Code", "FiraCode Nerd Font";
         font-size: 12px;
+        min-height: 0;
+      }
+
+      /* catppuccin.waybar ne définit que les variables de couleur (@base,
+         @text, ...) — il faut les appliquer explicitement pour avoir un
+         vrai fond sombre (sinon on hérite du thème GTK clair par défaut). */
+      window#waybar {
+        background-color: @base;
+        color: @text;
+        padding: 0 6px;
+      }
+
+      #workspaces button {
+        color: @subtext0;
+        background-color: transparent;
+        padding: 0 8px;
+        margin: 2px 3px;
+        border-radius: 6px;
+      }
+      #workspaces button.focused {
+        color: @base;
+        background-color: @blue;
+      }
+      #workspaces button.urgent {
+        color: @base;
+        background-color: @red;
+      }
+
+      #mode,
+      #backlight,
+      #custom-battery,
+      #tray {
+        color: @text;
+        padding: 0 8px;
+        margin: 2px 3px;
+      }
+
+      /* Veille désactivée via clic molette sur l'icône batterie. */
+      #custom-battery.inhibited {
+        color: @yellow;
+      }
+      #custom-battery.charging {
+        color: @green;
+      }
+
+      #clock {
+        color: @blue;
+        font-weight: bold;
+        padding: 0 8px;
+        margin: 2px 3px;
       }
     '';
   };
@@ -232,7 +451,7 @@ in
     };
     style = ''
       window {
-        font-family: "FiraCode Nerd Font";
+        font-family: "Fira Code", "FiraCode Nerd Font";
         font-size: 13px;
         background-color: #1e1e2e;
         color: #cdd6f4;

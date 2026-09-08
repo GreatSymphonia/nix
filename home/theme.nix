@@ -6,6 +6,7 @@
     kdePackages.spectacle
     kdePackages.kdeplasma-addons
     nerd-fonts.fira-code
+    fira-code
     libsForQt5.qtstyleplugin-kvantum
   ];
 
