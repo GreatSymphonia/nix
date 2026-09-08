@@ -155,7 +155,7 @@ Clic molette : désactiver la veille/le verrouillage automatique"
       class=$(echo "$status" | ${pkgs.coreutils}/bin/tr '[:upper:] ' '[:lower:]-')
     fi
 
-    ${pkgs.jq}/bin/jq -n --arg text "$icon" --arg tooltip "$tooltip" \
+    ${pkgs.jq}/bin/jq -nc --arg text "$icon" --arg tooltip "$tooltip" \
       --arg class "$class" --argjson percentage "$capacity" \
       '{text: $text, tooltip: $tooltip, class: $class, percentage: $percentage}'
   '';
