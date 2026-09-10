@@ -60,6 +60,14 @@ let
     host=$(printf '%s\n' "$hosts" | ${pkgs.wofi}/bin/wofi --dmenu --prompt "SSH" --width 300 --height 300)
     [ -n "$host" ] && exec ${terminal} -e ${pkgs.openssh}/bin/ssh "$host"
   '';
+  # Historique du presse-papiers "à la Win+V" : services.cliphist (ci-dessous)
+  # alimente l'historique en tâche de fond, ce menu ne fait que le lire et
+  # recopier l'entrée choisie dans le presse-papiers.
+  clipboardMenu = pkgs.writeShellScriptBin "clipboard-menu" ''
+    set -euo pipefail
+    entry=$(${pkgs.cliphist}/bin/cliphist list | ${pkgs.wofi}/bin/wofi --dmenu --prompt "Presse-papiers" --width 500 --height 400)
+    [ -n "$entry" ] && printf '%s' "$entry" | ${pkgs.cliphist}/bin/cliphist decode | ${pkgs.wl-clipboard}/bin/wl-copy
+  '';
   # Change le focus dans la direction donnée, puis place le curseur dans le
   # coin inférieur droit (avec une marge) de la fenêtre nouvellement focus,
   # pour que la souris ne saute jamais au centre.
@@ -203,7 +211,11 @@ Clic molette : désactiver la veille/le verrouillage automatique"
 in
 {
   catppuccin.waybar.enable = true;
-  catppuccin.mako.enable = true;
+  catppuccin.swaync = {
+    enable = true;
+    font = "FiraCode Nerd Font";
+    fontSize = "12";
+  };
 
   home.packages = with pkgs; [
     grim
@@ -293,7 +305,8 @@ in
       }
 
       # --- Démarrage automatique ---------------------------------------------
-      exec ${pkgs.mako}/bin/mako
+      # Notifications : services.swaync (ci-dessous) démarre le démon via son
+      # propre service systemd --user, pas besoin d'un exec ici.
       exec ${pkgs.kdePackages.polkit-kde-agent-1}/libexec/polkit-kde-authentication-agent-1
       # Trousseau KDE (org.freedesktop.secrets) — sous Plasma, kwalletd est
       # démarré par le login PAM (auto-déverrouillé), mais ce mécanisme ne
@@ -308,6 +321,7 @@ in
       # sorties audio, volume), pas juste du texte dans la barre.
       exec ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator
       exec ${pkgs.pasystray}/bin/pasystray
+      exec ${pkgs.blueman}/bin/blueman-applet
 
       # ======================= Raccourcis (calqués sur KDE) ===================
 
@@ -317,6 +331,7 @@ in
 
       # Lanceur SSH — liste les hôtes de ~/.ssh/config dans wofi.
       bindsym $mod+Shift+s exec ${sshMenu}/bin/ssh-menu
+      bindsym $mod+v exec ${clipboardMenu}/bin/clipboard-menu
 
       # Lanceur — Meta seul ouvre wofi, comme KRunner sous KDE (Meta seul).
       # On utilise le keysym littéral (Super_L/Super_R) plutôt que $mod :
@@ -384,10 +399,22 @@ in
       bindsym $mod+2 workspace 2
       bindsym $mod+3 workspace 3
       bindsym $mod+4 workspace 4
+      bindsym $mod+5 workspace 5
+      bindsym $mod+6 workspace 6
+      bindsym $mod+7 workspace 7
+      bindsym $mod+8 workspace 8
+      bindsym $mod+9 workspace 9
+      bindsym $mod+0 workspace 10
       bindsym $mod+Shift+1 move container to workspace 1
       bindsym $mod+Shift+2 move container to workspace 2
       bindsym $mod+Shift+3 move container to workspace 3
       bindsym $mod+Shift+4 move container to workspace 4
+      bindsym $mod+Shift+5 move container to workspace 5
+      bindsym $mod+Shift+6 move container to workspace 6
+      bindsym $mod+Shift+7 move container to workspace 7
+      bindsym $mod+Shift+8 move container to workspace 8
+      bindsym $mod+Shift+9 move container to workspace 9
+      bindsym $mod+Shift+0 move container to workspace 10
 
       # Capture d'écran — équivalent Spectacle (grim+slurp+swappy).
       bindsym Print exec screenshot-full
@@ -420,6 +447,7 @@ in
       # vrai menu interactif au clic (réseaux Wi-Fi, sorties audio), comme
       # les applets Plasma. Les modules restants sont réduits à l'icône.
       modules-right = [
+        "custom/notification"
         "custom/battery"
         "tray"
       ];
@@ -440,6 +468,26 @@ in
         signal = 8;
         on-click = "${cyclePowerProfile}/bin/cycle-power-profile";
         on-click-middle = "${toggleIdleInhibit}/bin/toggle-idle-inhibit";
+      };
+      # Centre de notifications (swaync, voir services.swaync ci-dessous) :
+      # l'icône change quand une notification est en attente ; clic gauche
+      # ouvre le panneau d'historique, clic droit bascule le mode "Ne pas
+      # déranger" — équivalent du plasmoïde de notifications Plasma.
+      "custom/notification" = {
+        tooltip = false;
+        format = "{icon}";
+        format-icons = {
+          notification = "<span foreground='#f38ba8'><sup></sup></span>";
+          none = "";
+          dnd-notification = "<span foreground='#f38ba8'><sup></sup></span>";
+          dnd-none = "";
+        };
+        return-type = "json";
+        exec-if = "which swaync-client";
+        exec = "${pkgs.swaynotificationcenter}/bin/swaync-client -swb";
+        on-click = "${pkgs.swaynotificationcenter}/bin/swaync-client -t -sw";
+        on-click-right = "${pkgs.swaynotificationcenter}/bin/swaync-client -d -sw";
+        escape = true;
       };
       tray.spacing = 10;
     };
@@ -538,13 +586,34 @@ in
     '';
   };
 
-  services.mako = {
+  # Notifications : swaync remplace mako pour avoir un vrai panneau
+  # d'historique (équivalent du centre de notifications Plasma), pas
+  # seulement des popups éphémères. Le style (couleurs) vient entièrement de
+  # catppuccin.swaync ci-dessus. L'icône/bascule du panneau est le module
+  # waybar "custom/notification" (voir programs.waybar plus bas).
+  services.swaync = {
     enable = true;
     settings = {
-      default-timeout = 6000;
-      border-radius = 8;
-      font = "FiraCode Nerd Font 10";
+      positionX = "right";
+      positionY = "top";
+      timeout = 6;
+      timeout-low = 4;
+      timeout-critical = 0;
+      notification-window-width = 400;
+      control-center-width = 400;
     };
+  };
+
+  # Presse-papiers "à la Win+V" : capture le contenu copié en tâche de fond ;
+  # $mod+v (voir extraConfig) ouvre le menu wofi qui lit cet historique.
+  services.cliphist.enable = true;
+
+  # Montage automatique des périphériques amovibles + icône de tray tant
+  # qu'un périphérique est monté (équivalent du "device notifier" Plasma).
+  # Nécessite services.udisks2.enable côté système (modules/nixos/sway.nix).
+  services.udiskie = {
+    enable = true;
+    tray = "auto";
   };
 
   programs.swaylock = {
