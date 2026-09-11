@@ -29,7 +29,17 @@
     prismlauncher
     google-cloud-sdk
     nextcloud-client
-    pandoc
+    # pandoc utilise pdflatex par défaut, qui ne gère pas les caractères
+    # Unicode (ex: ≈). On force xelatex, qui les gère nativement.
+    (pkgs.symlinkJoin {
+      name = "pandoc-xelatex";
+      paths = [ pandoc ];
+      nativeBuildInputs = [ makeWrapper ];
+      postBuild = ''
+        wrapProgram $out/bin/pandoc --add-flags "--pdf-engine=xelatex"
+      '';
+    })
+    texlive.combined.scheme-full
     zotero
     parted
     grub2_efi

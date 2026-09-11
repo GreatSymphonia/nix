@@ -439,7 +439,7 @@ in
       layer = "top";
       position = "top";
       height = 24;
-      output = [ "DP-9" ];
+      # output = [ "DP-9" ];
       modules-left = [ "sway/workspaces" "sway/mode" ];
       modules-center = [ "clock" ];
       # Audio et réseau ne sont plus des modules texte waybar : nm-applet et
