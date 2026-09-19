@@ -641,4 +641,40 @@ in
       before-sleep = "${pkgs.swaylock}/bin/swaylock -f";
     };
   };
+
+  # Garde-fou : waybar est lancée par `bar { swaybar_command waybar }`
+  # (voir extraConfig ci-dessus), donc sway ne la relance jamais toute
+  # seule si elle meurt. Or un `nixos-rebuild switch` provoque parfois un
+  # SIGSEGV en rafale de plusieurs process GUI (waybar, nm-applet,
+  # xdg-desktop-portal-gtk...) au moment où la session graphique est
+  # rechargée — probablement une coupure brutale de la connexion
+  # Wayland/GPU pendant l'activation home-manager. Ce service surveille
+  # waybar et déclenche un `swaymsg reload` (qui la relance via
+  # swaybar_command) si elle a disparu.
+  systemd.user.services.waybar-watchdog = {
+    Unit = {
+      Description = "Relance waybar si elle crashe (ex: pendant un nixos-rebuild switch)";
+      After = [ "sway-session.target" ];
+      PartOf = [ "sway-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.writeShellScript "waybar-watchdog" ''
+        set -euo pipefail
+        while true; do
+          # Le wrapper Nix renomme le process en ".waybar-wrapped" (visible
+          # dans /proc/*/comm), pas "waybar" — pgrep -x échouerait toujours
+          # et déclencherait un reload en boucle. Pas de -x ici : on veut
+          # matcher aussi bien "waybar" que ".waybar-wrapped".
+          if ! ${pkgs.procps}/bin/pgrep waybar >/dev/null; then
+            ${pkgs.sway}/bin/swaymsg reload || true
+          fi
+          sleep 5
+        done
+      ''}";
+      Restart = "always";
+      RestartSec = 2;
+    };
+    Install.WantedBy = [ "sway-session.target" ];
+  };
 }

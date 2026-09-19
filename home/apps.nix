@@ -64,6 +64,38 @@
     talosctl
     unstable.omnictl
     nil
+
+    # Dusklight — port PC natif de Twilight Princess. Le build depuis le
+    # flake amont (github:TwilitRealm/dusklight) échoue actuellement :
+    # sur la branche main, le submodule extern/aurora attend une version
+    # de dawn plus récente que celle que le flake épingle (static_assert
+    # "capturing lambdas aren't supported for repeatable callbacks" dans
+    # dawn/webgpu_cpp.h) — bug amont indépendant de notre packaging.
+    # On installe donc l'AppImage officielle à la place :
+    # https://github.com/TwilitRealm/dusklight/releases
+    (let
+      version = "1.4.1";
+      appimage = pkgs.fetchurl {
+        url = "https://github.com/TwilitRealm/dusklight/releases/download/v${version}/Dusklight-v${version}-linux-x86_64.AppImage";
+        hash = "sha256-9d0TCMExQwlFzBLN1E8i0x491uxUWEmEkZJKXp+pLUA=";
+      };
+      appimageContents = pkgs.appimageTools.extractType2 {
+        pname = "dusklight";
+        inherit version;
+        src = appimage;
+      };
+    in
+    pkgs.appimageTools.wrapType2 {
+      pname = "dusklight";
+      inherit version;
+      src = appimage;
+      extraInstallCommands = ''
+        install -Dm444 ${appimageContents}/dev.twilitrealm.dusk.desktop \
+          $out/share/applications/dev.twilitrealm.dusk.desktop
+        install -Dm444 ${appimageContents}/dev.twilitrealm.dusk.png \
+          $out/share/icons/hicolor/512x512/apps/dev.twilitrealm.dusk.png
+      '';
+    })
   ];
 
   programs.ghostty = {
