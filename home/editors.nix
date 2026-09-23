@@ -49,6 +49,7 @@
       ];
 
       userSettings = {
+        "ansible.lightspeed.enabled" = false;
         # Thème
         "workbench.colorTheme"    = "Catppuccin Mocha";
         "workbench.iconTheme"     = "catppuccin-mocha";

@@ -57,6 +57,59 @@
         sudo sbctl verify
       }
 
+      # Compare la version d'omnictl pinnée dans home/apps.nix à celle exigée
+      # par notre instance Omni (cedille), qui sert justement le binaire
+      # attendu par le serveur à cette URL. N'écrit rien — affiche juste le
+      # nouveau hash à coller dans apps.nix si une mise à jour est dispo.
+      omnictl-check-update() {
+        local omni_url="https://cedille.na-west-1.omni.siderolabs.io/api/omnictl/omnictl-linux-amd64"
+        local apps_nix="/etc/nixos/home/apps.nix"
+        local pinned
+        pinned="$(grep -B5 'pname = "omnictl"' "$apps_nix" | grep -oP 'version = "\K[0-9.]+' | head -1)"
+
+        if [ -z "$pinned" ]; then
+          echo "Impossible de trouver la version pinnée d'omnictl dans $apps_nix" >&2
+          return 1
+        fi
+
+        local tmp
+        tmp="$(mktemp)"
+        trap 'rm -f "$tmp"' RETURN
+
+        echo "Téléchargement du binaire servi par l'instance Omni..."
+        if ! curl -sSfL -o "$tmp" "$omni_url"; then
+          echo "Échec du téléchargement depuis $omni_url" >&2
+          return 1
+        fi
+        chmod +x "$tmp"
+
+        local server_version
+        server_version="$("$tmp" --version 2>/dev/null | grep -oP '(?<=version v)[0-9.]+')"
+        if [ -z "$server_version" ]; then
+          echo "Impossible de déterminer la version servie par l'instance Omni" >&2
+          return 1
+        fi
+
+        echo "Version pinnée (apps.nix) : $pinned"
+        echo "Version servie (Omni)     : $server_version"
+
+        if [ "$pinned" = "$server_version" ]; then
+          echo "omnictl est à jour."
+          return 0
+        fi
+
+        local hash
+        hash="$(nix hash file "$tmp" 2>/dev/null)"
+
+        echo
+        echo "Mise à jour disponible ! Dans $apps_nix, remplace :"
+        echo "  version = \"$pinned\";"
+        echo "par :"
+        echo "  version = \"$server_version\";"
+        echo "et le hash par :"
+        echo "  hash = \"$hash\";"
+      }
+
       enixcfg() {
         local arg="$1"
         local subcmd="$1"

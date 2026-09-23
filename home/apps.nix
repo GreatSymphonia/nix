@@ -1,4 +1,4 @@
-{ pkgs, unstable, inputs, ... }: {
+{ pkgs, inputs, ... }: {
   home.packages = with pkgs; [
     # Terminal
     ghostty
@@ -62,7 +62,33 @@
     # krew
     kubelogin-oidc
     talosctl
-    unstable.omnictl
+
+    # omnictl — nixpkgs-unstable traîne (1.10.6) derrière notre instance Omni
+    # (cedille), qui exige un client plus récent. On épingle donc directement
+    # le binaire statique officiel publié par siderolabs plutôt que le build
+    # depuis les sources nixpkgs.
+    # Pour vérifier si une mise à jour est disponible : `omnictl-check-update`
+    # (voir home/omnictl-update-check.nix).
+    (let
+      version = "1.12.1";
+    in
+    pkgs.stdenvNoCC.mkDerivation {
+      pname = "omnictl";
+      inherit version;
+      src = pkgs.fetchurl {
+        url = "https://github.com/siderolabs/omni/releases/download/v${version}/omnictl-linux-amd64";
+        hash = "sha256-/ZfeF5geRETvruriPMqMVSC803pZjjgiev6DUDjvaGA=";
+      };
+      dontUnpack = true;
+      installPhase = ''
+        install -Dm755 $src $out/bin/omnictl
+      '';
+      meta = {
+        description = "CLI client for Sidero Omni";
+        homepage = "https://github.com/siderolabs/omni";
+        platforms = [ "x86_64-linux" ];
+      };
+    })
     nil
 
     # Dusklight — port PC natif de Twilight Princess. Le build depuis le
