@@ -2,6 +2,7 @@
   catppuccin.flavor = "mocha";
 
   imports = [
+    ./ableton.nix
     ./shell.nix
     ./git.nix
     ./editors.nix
