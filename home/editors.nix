@@ -50,6 +50,7 @@
 
       userSettings = {
         "ansible.lightspeed.enabled" = false;
+        "ansible.lightspeed.suggestions.enabled" = false;
         # Thème
         "workbench.colorTheme"    = "Catppuccin Mocha";
         "workbench.iconTheme"     = "catppuccin-mocha";
