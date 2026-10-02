@@ -43,6 +43,11 @@
 # Note on nixpkgs attribute names: this uses `wineWow64Packages`, the
 # current (2026) name for the multi-arch wine set. If your channel is
 # old enough to still call it `wineWowPackages`, swap that in instead.
+#
+# Note on the `wine` binary: as of wine-staging 10.2+, the separate
+# `wine64` binary was folded back into `wine` (it auto-detects arch from
+# the target .exe / prefix), so the wrapper below calls `wine`, not
+# `wine64`.
 
 { config, lib, pkgs, ... }:
 
@@ -82,12 +87,12 @@ let
     fi
 
     if [ "$#" -eq 0 ]; then
-      exec ${wine}/bin/wine64 "$exec_path"
+      exec ${wine}/bin/wine "$exec_path"
     fi
 
     case "$1" in
       ableton://*)
-        exec ${wine}/bin/wine64 "$exec_path" "$1"
+        exec ${wine}/bin/wine "$exec_path" "$1"
         ;;
       *)
         abs_path=$(realpath "$1")
