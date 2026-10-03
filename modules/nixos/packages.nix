@@ -72,7 +72,7 @@
     kdePackages.plasma-thunderbolt
     screen
     ripgrep
-    clonehero
+    unstablePkgs.clonehero
     yarg
     wireguard-tools
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
