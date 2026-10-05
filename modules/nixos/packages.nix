@@ -96,6 +96,8 @@
       ansible
       ansible-core
       ansible-lint
+      scapy
+      pillow
     ]))
   ];
 }

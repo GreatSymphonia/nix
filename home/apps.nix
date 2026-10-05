@@ -91,6 +91,17 @@
     })
     nil
 
+    # Environnement Python personnalisé pour Louis
+    (lib.hiPrio (python3.withPackages (python-pkgs: with python-pkgs; [
+      pandas
+      requests
+      ansible
+      ansible-core
+      ansible-lint
+      scapy
+      pillow
+    ])))
+
     # Dusklight — port PC natif de Twilight Princess. Le build depuis le
     # flake amont (github:TwilitRealm/dusklight) échoue actuellement :
     # sur la branche main, le submodule extern/aurora attend une version
