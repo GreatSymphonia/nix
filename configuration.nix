@@ -12,6 +12,7 @@ in {
     ./modules/nixos/boot.nix
     ./modules/nixos/desktop.nix
     ./modules/nixos/sway.nix
+    ./modules/nixos/swayfx.nix
     ./modules/nixos/nix-core.nix
     ./modules/nixos/packages.nix
     ./modules/nixos/system-locale.nix

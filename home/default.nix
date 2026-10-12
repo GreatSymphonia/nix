@@ -11,6 +11,7 @@
     ./theme.nix
     ./plasma.nix
     ./sway.nix
+    ./swayfx.nix
     ./networkmanager.nix
     ./claude-code.nix
     ./nvim.nix
