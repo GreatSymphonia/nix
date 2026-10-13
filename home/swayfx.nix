@@ -163,4 +163,5 @@ in
   # Sans effet hors session SwayFX (la variable n'y existe pas) : dans SwayFX,
   # c'est le superviseur ci-dessus qui relance waybar, sans `swaymsg reload`.
   systemd.user.services.waybar-watchdog.Unit.ConditionEnvironment = "!SWAYFX_SESSION";
+    dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 }
