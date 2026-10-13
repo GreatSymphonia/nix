@@ -2,9 +2,10 @@
 
 let
   swaycfg = config.wayland.windowManager.sway;
+  waybarPkg = config.programs.waybar.package;
   asText = v: if v == null then "" else if lib.isString v then v else builtins.readFile v;
 
-  # --- Waybar dédié à SwayFX (dérivé de ta config, sans la modifier) ---------
+  # --- Waybar dédié à SwayFX ------------------------------------------------
   waybarFxConfig = pkgs.writeText "waybar-swayfx.json" (builtins.toJSON [
     (config.programs.waybar.settings.mainBar // {
       margin = "6 8 0 8";   # barre flottante
@@ -28,7 +29,21 @@ let
     }
   '';
 
-  # --- Menu scratchpad (liste les fenêtres cachées, ignore le dummy idle) ----
+  # Superviseur : relance waybar s'il meurt (pause de 2 s), sans toucher à sway,
+  # et journalise sa sortie dans $XDG_RUNTIME_DIR/waybar-swayfx.log.
+  waybarFx = pkgs.writeShellScript "waybar-swayfx" ''
+    log="''${XDG_RUNTIME_DIR:-/tmp}/waybar-swayfx.log"
+    child=""
+    trap 'if [ -n "$child" ]; then kill "$child" 2>/dev/null; fi; exit 0' TERM INT
+    while true; do
+      ${waybarPkg}/bin/waybar -c ${waybarFxConfig} -s ${waybarFxStyle} "$@" >>"$log" 2>&1 &
+      child=$!
+      wait "$child" || true
+      sleep 2
+    done
+  '';
+
+  # --- Menu scratchpad -------------------------------------------------------
   scratchpadMenu = pkgs.writeShellScriptBin "scratchpad-menu" ''
     set -euo pipefail
     dummy="idle-inhibitor-dummy"
@@ -47,20 +62,44 @@ let
     ${pkgs.sway}/bin/swaymsg "[con_id=$id] scratchpad show"
   '';
 
-  # --- Ta config sway actuelle, lue telle quelle, avec waybar remplacé -------
-  base = builtins.replaceStrings
-    [ "swaybar_command waybar" ]
-    [ "swaybar_command ${config.programs.waybar.package}/bin/waybar -c ${waybarFxConfig} -s ${waybarFxStyle}" ]
-    swaycfg.extraConfig;
+  # --- Profils d'écrans (kanshi) --------------------------------------------
+  # kanshi ne gère ici que eDP-1 (on/off) et les positions ; les modes
+  # (1920x1080@75/100 Hz) viennent de tes lignes `output` statiques.
+  kanshiConf = pkgs.writeText "kanshi-swayfx" ''
+    profile docked {
+      output "eDP-1" disable
+      output "DP-11" enable position 0,0
+      output "DP-9"  enable position 1920,0
+      output "DP-10" enable position 3840,0
+    }
+
+    profile undocked {
+      output "eDP-1" enable scale 1.5
+    }
+  '';
+
+  # --- Ta config sway actuelle, adaptée pour la session SwayFX --------------
+  dropLine = pattern: text:
+    lib.concatStringsSep "\n"
+      (builtins.filter (l: builtins.match pattern l == null) (lib.splitString "\n" text));
+
+  base =
+    dropLine "[[:space:]]*output \"eDP-1\" disable[[:space:]]*"
+      (builtins.replaceStrings
+        [ "swaybar_command waybar" ]
+        [ "swaybar_command ${waybarFx}" ]
+        swaycfg.extraConfig);
 
   fxExtra = ''
 
     # ======================= SwayFX (session dédiée) =========================
 
-    # Équivalent de l'intégration systemd que home-manager ajoute à ~/.config/sway/config :
-    # sans ça, sway-session.target ne démarre pas (swayidle, swaync, cliphist,
-    # udiskie, waybar-watchdog en dépendent).
-    exec "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE; ${pkgs.systemd}/bin/systemctl --user start sway-session.target"
+    # Intégration systemd (équivalent de ce que home-manager ajoute à la config
+    # sway vanilla) + marqueur de session, lu par la condition du watchdog.
+    exec "${pkgs.dbus}/bin/dbus-update-activation-environment --systemd DISPLAY WAYLAND_DISPLAY SWAYSOCK XDG_CURRENT_DESKTOP XDG_SESSION_TYPE SWAYFX_SESSION=1; ${pkgs.systemd}/bin/systemctl --user start sway-session.target"
+
+    # Bascule automatique 1 ↔ 3 écrans (dock branché / débranché).
+    exec ${pkgs.kanshi}/bin/kanshi -c ${kanshiConf}
 
     corner_radius 10
     gaps inner 6
@@ -87,7 +126,6 @@ let
     dim_inactive_colors.urgent    #900000FF
     # for_window [app_id="mpv"] dim_inactive 0.0
 
-    # Namespaces : swaymsg -r -t get_outputs | jq '.[0].layer_shell_surfaces | .[] | .namespace'
     layer_effects "waybar" {
       blur enable;
       blur_ignore_transparent enable;
@@ -121,4 +159,8 @@ let
 in
 {
   xdg.configFile."swayfx/config".text = base + fxExtra;
+
+  # Sans effet hors session SwayFX (la variable n'y existe pas) : dans SwayFX,
+  # c'est le superviseur ci-dessus qui relance waybar, sans `swaymsg reload`.
+  systemd.user.services.waybar-watchdog.Unit.ConditionEnvironment = "!SWAYFX_SESSION";
 }
