@@ -3,6 +3,7 @@
 
   imports = [
     ./ableton.nix
+    ./browser.nix
     ./shell.nix
     ./git.nix
     ./editors.nix

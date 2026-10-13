@@ -7,8 +7,12 @@ let
 
   launcher = pkgs.writeShellScript "swayfx-session" ''
     export XDG_SESSION_TYPE=wayland
-    # "sway" pour que les portals (xdg-desktop-portal-wlr) se configurent normalement.
     export XDG_CURRENT_DESKTOP=sway
+
+    # Thème Qt/KDE (Dolphin, Kate, etc.) et couleurs complètes de Plasma
+    export QT_QPA_PLATFORMTHEME=kde
+    export XDG_CONFIG_DIRS="$HOME/.config/kdedefaults''${XDG_CONFIG_DIRS:+:$XDG_CONFIG_DIRS}"
+
 
     cfg="$HOME/.config/swayfx/config"
     if [ -r "$cfg" ]; then

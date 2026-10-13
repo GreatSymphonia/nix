@@ -74,7 +74,7 @@ let
     }
 
     profile undocked {
-      output "eDP-1" enable scale 1.5
+      output "eDP-1" enable scale 1.25
     }
   '';
 
