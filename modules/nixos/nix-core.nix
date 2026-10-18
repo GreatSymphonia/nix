@@ -20,10 +20,12 @@
   # derivation, so autoPatchelfHook never touches it).
   programs.nix-ld.enable = true;
   programs.nix-ld.libraries = with pkgs; [
-    stdenv.cc.cc
+    stdenv.cc.cc.lib  # Fournit libstdc++.so.6, crucial pour de nombreux binaires
     zlib
     openssl
     icu
     curl
+    sqlite
+    xz
   ];
 }
