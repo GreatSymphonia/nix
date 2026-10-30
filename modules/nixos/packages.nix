@@ -89,6 +89,7 @@
     cargo
     luarocks
     go
+    vesktop
 
     (python3.withPackages (python-pkgs: with python-pkgs; [
       pandas
