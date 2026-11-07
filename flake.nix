@@ -39,7 +39,7 @@
     };    
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, lanzaboote, brother-ql570-src, opencode-nix, nix-hermes, ... }:
+  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, lanzaboote, brother-ql570-src, ... }:
   let
     system = "x86_64-linux";
     brotherQl570Sources = {
@@ -72,7 +72,6 @@
         home-manager.nixosModules.home-manager
         lanzaboote.nixosModules.lanzaboote
         home-manager.nixosModules.home-manager
-        nix-hermes.nixosModules.hermes-agent
         {
           home-manager.backupFileExtension = "bak";
           home-manager.extraSpecialArgs = { unstable = unstablePkgs; inherit inputs; };
