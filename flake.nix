@@ -1,5 +1,5 @@
 {
-  description = "NixOS system configuration (progressive flake migration)";
+  description = "NixOS system configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -36,10 +36,10 @@
     lanzaboote = {
       url = "github:nix-community/lanzaboote";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
+    };    
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, lanzaboote, brother-ql570-src, ... }:
+  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, lanzaboote, brother-ql570-src, opencode-nix, nix-hermes, ... }:
   let
     system = "x86_64-linux";
     brotherQl570Sources = {
@@ -71,6 +71,8 @@
       modules = [
         home-manager.nixosModules.home-manager
         lanzaboote.nixosModules.lanzaboote
+        home-manager.nixosModules.home-manager
+        nix-hermes.nixosModules.hermes-agent
         {
           home-manager.backupFileExtension = "bak";
           home-manager.extraSpecialArgs = { unstable = unstablePkgs; inherit inputs; };
