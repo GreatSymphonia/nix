@@ -81,6 +81,25 @@ OpenCode CLI et OpenCode Desktop sont installés depuis `nixpkgs-unstable` via `
 
 La configuration et les procédures de repli sont documentées dans `docs/opencode.md`.
 
+## Obsidian
+
+Obsidian et le vault `~/Obsidian` sont configurés dans `home/obsidian.nix`. Les plugins communautaires proviennent du flake tiers [`nix-obsidian-extensions`](https://github.com/karaolidis/nix-obsidian-extensions) et sont liés depuis le Nix store : ils ne peuvent donc pas être mis à jour depuis l'interface d'Obsidian.
+
+Pour mettre à jour les plugins :
+
+```bash
+cd /etc/nixos
+
+# Met à jour uniquement le flake des extensions Obsidian
+nix flake update obsidian-extensions
+
+# Vérifie la construction, puis applique
+sudo nixos-rebuild build --flake .#nixos
+sudo nixos-rebuild switch --flake .#nixos
+```
+
+Pour ajouter ou retirer un plugin, modifier la liste `settings.communityPlugins` dans `home/obsidian.nix`, puis relancer `nixos-rebuild switch`.
+
 ## Notes
 
 - Si une commande flake échoue à cause de Git, vérifier que les fichiers nécessaires sont suivis (`git add`).

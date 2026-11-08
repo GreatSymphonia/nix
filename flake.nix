@@ -15,6 +15,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    obsidian-extensions = {
+      url = "github:karaolidis/nix-obsidian-extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     plasma-manager = {
       url = "github:nix-community/plasma-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -68,7 +73,10 @@
         modules = [
           {
             nixpkgs.hostPlatform = system;
-            nixpkgs.overlays = [ (import ./pkgs { inherit inputs; }) ];
+            nixpkgs.overlays = [
+              (import ./pkgs { inherit inputs; })
+              inputs.obsidian-extensions.overlays.default
+            ];
           }
 
           home-manager.nixosModules.home-manager

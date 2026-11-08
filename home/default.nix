@@ -16,6 +16,7 @@
     ./swayfx.nix
     ./networkmanager.nix
     ./nvim.nix
+    ./obsidian.nix
   ];
 
   home.packages = with pkgs; [
