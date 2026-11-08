@@ -1,9 +1,12 @@
 { pkgs, ... }: {
   programs.obsidian = {
     enable = true;
+    package = pkgs.unstable.obsidian;
 
     vaults.main = {
       target = "Obsidian";
+
+      settings.themes = [ pkgs.obsidianThemes.catppuccin ];
 
       settings.communityPlugins = with pkgs.obsidianPlugins; [
         advanced-canvas

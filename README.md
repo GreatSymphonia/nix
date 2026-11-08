@@ -83,9 +83,9 @@ La configuration et les procédures de repli sont documentées dans `docs/openco
 
 ## Obsidian
 
-Obsidian et le vault `~/Obsidian` sont configurés dans `home/obsidian.nix`. Les plugins communautaires proviennent du flake tiers [`nix-obsidian-extensions`](https://github.com/karaolidis/nix-obsidian-extensions) et sont liés depuis le Nix store : ils ne peuvent donc pas être mis à jour depuis l'interface d'Obsidian.
+Obsidian et le vault `~/Obsidian` sont configurés dans `home/obsidian.nix`. Les plugins communautaires et les thèmes proviennent du flake tiers [`nix-obsidian-extensions`](https://github.com/karaolidis/nix-obsidian-extensions) et sont liés depuis le Nix store : ils ne peuvent donc pas être mis à jour depuis l'interface d'Obsidian.
 
-Pour mettre à jour les plugins :
+Pour mettre à jour les plugins et les thèmes :
 
 ```bash
 cd /etc/nixos
@@ -98,7 +98,7 @@ sudo nixos-rebuild build --flake .#nixos
 sudo nixos-rebuild switch --flake .#nixos
 ```
 
-Pour ajouter ou retirer un plugin, modifier la liste `settings.communityPlugins` dans `home/obsidian.nix`, puis relancer `nixos-rebuild switch`.
+Pour ajouter ou retirer un plugin, modifier la liste `settings.communityPlugins` dans `home/obsidian.nix`, puis relancer `nixos-rebuild switch`. Les thèmes se gèrent de la même façon via `settings.themes`.
 
 ## Notes
 

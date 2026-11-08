@@ -81,6 +81,7 @@
     luarocks
     go
     vesktop
+    musescore
 
     (python3.withPackages (
       python-pkgs: with python-pkgs; [
