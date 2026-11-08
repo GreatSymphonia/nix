@@ -1,91 +1,88 @@
-# NixOS Config - Quickstart
+# Configuration NixOS
 
-Configuration NixOS modulaire avec Flakes, Home Manager et Plasma Manager.
+Configuration NixOS de Louis : flake unique, Home Manager intégré à NixOS, Plasma et Sway/SwayFX, pilotée depuis `/etc/nixos`.
 
-## Layout des fichiers
+## Structure
 
-- `flake.nix` : point d'entree principal (inputs + outputs)
-- `flake.lock` : versions verrouillees des dependances
-- `configuration.nix` : assemblage principal NixOS
-- `hardware-configuration.nix` : config materielle auto-generee
-- `.gitignore` : ignore les artefacts temporaires (ex: result)
+```text
+.
+├── flake.nix                       # inputs, overlay, configuration de l'hôte
+├── flake.lock                      # versions verrouillées des dépendances
+├── hosts/nixos/
+│   ├── default.nix                 # assemblage de l'hôte nixos
+│   └── hardware-configuration.nix  # configuration matérielle générée
+├── home/                           # modules Home Manager de l'utilisateur louis
+├── modules/nixos/
+│   ├── core/                       # nix, locale, réseau, utilisateurs
+│   ├── hardware/                   # audio, Bluetooth, boot, imprimante
+│   ├── desktop/                    # Plasma, Sway, SwayFX
+│   └── services/                   # flatpak, virtualisation, Android
+├── pkgs/                           # overlay et dérivations de paquets
+└── docs/                           # documentation longue (Ableton, OpenCode, Secure Boot)
+```
 
-### Home Manager
+Home Manager n'a qu'un seul point d'entrée : `home-manager.users.louis`, défini dans `hosts/nixos/default.nix` et appliqué à chaque rebuild NixOS. Il n'y a plus de `homeConfigurations` autonome.
 
-- `home/default.nix` : imports Home Manager
-- `home/shell.nix` : aliases, enixcfg, completion bash
-- `home/git.nix` : config Git + delta
-- `home/editors.nix` : VS Code + extensions/settings
-- `home/apps.nix` : applications user
-- `home/theme.nix` : theme GTK/Qt + fonts
-- `home/plasma.nix` : reglages Plasma
+## Prérequis
 
-### Modules NixOS
+- NixOS avec les flakes activés.
+- Le dépôt est utilisé depuis `/etc/nixos`.
+- Les fichiers du flake doivent être suivis par Git : un flake local ne voit que les fichiers suivis.
 
-- `modules/nixos/boot.nix`
-- `modules/nixos/system-locale.nix`
-- `modules/nixos/desktop.nix`
-- `modules/nixos/audio.nix`
-- `modules/nixos/bluetooth.nix`
-- `modules/nixos/user.nix`
-- `modules/nixos/packages.nix`
-- `modules/nixos/nix-core.nix`
-- `modules/nixos/virtualisation.nix`
+## Commandes
 
-## Prerequis
+Depuis `/etc/nixos` :
 
-- NixOS avec flakes actifs
-- Ce repo present dans `/etc/nixos`
-- Fichiers flake suivis par Git (important pour evaluation flake)
+```bash
+# Vérifier l'évaluation sans construire
+nix flake check --no-build --show-trace
 
-## Demarrage rapide
+# Construire sans activer
+sudo nixos-rebuild build --flake /etc/nixos#nixos
 
-Depuis `/etc/nixos`:
+# Activer la configuration
+sudo nixos-rebuild switch --flake /etc/nixos#nixos
 
-1. Verifier les changements
-   - `git status`
+# Mettre à jour les inputs puis activer
+sudo nix flake update --flake /etc/nixos
+sudo nixos-rebuild switch --flake /etc/nixos#nixos
+```
 
-2. Ajouter les fichiers utiles au suivi Git
-   - `git add flake.nix flake.lock configuration.nix modules home .gitignore README.md`
+## Alias utiles
 
-3. Build NixOS (sans switch)
-   - `sudo nixos-rebuild build --flake /etc/nixos#nixos`
+Définis dans `home/shell.nix` :
 
-4. Appliquer la config NixOS
-   - `sudo nixos-rebuild switch --flake /etc/nixos#nixos`
+| Alias | Action |
+|---|---|
+| `nixcheck` | `nixos-rebuild build` avec traces |
+| `nixtest` | `nixos-rebuild test` |
+| `nixrebuild` | `nixos-rebuild switch` + vérification Secure Boot |
+| `nixboot` | `nixos-rebuild boot` + vérification Secure Boot |
+| `nixupdate` | mise à jour du flake puis `nixos-rebuild switch` |
+| `nixcleanup` | nettoyage du store Nix |
+| `nixgit` | `git add -A` puis commit `wip` |
+| `nixpush` | `git push` |
+| `hmcheck` | build complet via `nixos-rebuild build` |
+| `hmrebuild` | switch complet via `nixos-rebuild switch` |
+| `codenix` | ouvre `/etc/nixos` dans VS Code en root |
 
-5. Verifier/appliquer Home Manager
-   - `nix run path:/etc/nixos#home-manager -- build --flake path:/etc/nixos#louis@nixos --no-out-link`
-   - `nix run path:/etc/nixos#home-manager -- switch --flake path:/etc/nixos#louis@nixos`
+`hmcheck` et `hmrebuild` restent des raccourcis, mais passent désormais par `nixos-rebuild` : Home Manager est appliqué par NixOS.
 
-## Aliases utiles
+## enixcfg
 
-Definis dans `home/shell.nix`:
+`enixcfg` ouvre rapidement un fichier de configuration :
 
-- `nixcheck` : build NixOS avec traces
-- `nixtest` : test NixOS
-- `nixrebuild` : switch NixOS
-- `nixboot` : generation boot NixOS
-- `nixupdate` : update flake + switch NixOS
-- `hmcheck` : build Home Manager sans `result`
-- `hmrebuild` : switch Home Manager
-- `codenix` : ouvre `/etc/nixos` dans VS Code en sudo
+- principaux : `main home shell flake lock git editors apps theme`
+- modules : préfixe `mod/`, par exemple `enixcfg mod/audio` ou `enixcfg mod/desktop`
 
-## enixcfg (navigation rapide)
+## OpenCode
 
-Commande helper pour ouvrir les fichiers de config:
+OpenCode CLI et OpenCode Desktop sont installés depuis `nixpkgs-unstable` via `home/opencode.nix`. Les mises à jour automatiques sont désactivées : le paquet suit le flake.
 
-- principaux: `main home shell flake lock git editors apps theme`
-- modules: utiliser uniquement le prefixe `mod/`
-
-Exemples:
-
-- `enixcfg main`
-- `enixcfg flake`
-- `enixcfg mod/audio`
-- `enixcfg mod/desktop`
+La configuration et les procédures de repli sont documentées dans `docs/opencode.md`.
 
 ## Notes
 
-- Si une commande flake echoue avec un souci Git, verifier que les fichiers necessaires sont suivis.
-- Si un alias n'est pas pris en compte, ouvrir un nouveau shell ou reappliquer la config.
+- Si une commande flake échoue à cause de Git, vérifier que les fichiers nécessaires sont suivis (`git add`).
+- Après modification d'un alias, ouvrir un nouveau shell ou relancer la configuration.
+- Les chemins en dur restants sont inventoriés dans `/etc/docs/refactor-nixos.md` et seront traités dans une session dédiée.

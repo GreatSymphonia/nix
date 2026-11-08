@@ -8,18 +8,17 @@
     ./git.nix
     ./editors.nix
     ./apps.nix
+    ./opencode.nix
     ./flatpak.nix
     ./theme.nix
     ./plasma.nix
-    ./sway.nix
+    ./sway
     ./swayfx.nix
     ./networkmanager.nix
-    ./claude-code.nix
     ./nvim.nix
   ];
 
   home.packages = with pkgs; [
-    home-manager
     atool
     httpie
     ripgrep
@@ -31,7 +30,6 @@
     tmux
     htop
     btop
-    micro
 
     # Dev CLI
     gnumake
@@ -41,30 +39,31 @@
   ];
 
   home.sessionVariables = {
-    BROWSER = "firefox";
-    EDITOR  = "micro";
-    VISUAL  = "micro";
+    BROWSER = "zen";
+    EDITOR = "micro";
+    VISUAL = "micro";
     GTK_IM_MODULE = "simple";
 
     # SonarQube — sonar-scanner CLI global config (voir shell.nix pour SONAR_TOKEN)
     SONAR_HOST_URL = "https://sonarqube.etsmtl.club";
   };
 
-  home.file.".config/micro/settings.json".text = ''
-    {
-      "colorscheme": "default",
-      "tabsize": 2,
-      "tabstospaces": true,
-      "autoclose": true,
-      "autoindent": true,
-      "mouse": true,
-      "ruler": true,
-      "savecursor": true,
-      "saveundo": true
-    }
-  '';
+  programs.micro = {
+    enable = true;
+    settings = {
+      colorscheme = "default";
+      tabsize = 2;
+      tabstospaces = true;
+      autoclose = true;
+      autoindent = true;
+      mouse = true;
+      ruler = true;
+      savecursor = true;
+      saveundo = true;
+    };
+  };
 
-  home.file.".config/micro/colorschemes/catppuccin-mocha-transparent.micro".text = ''
+  xdg.configFile."micro/colorschemes/catppuccin-mocha-transparent.micro".text = ''
     color-link default "#cdd6f4,none"
     color-link comment "#6c7086,none"
     color-link identifier "#cba6f7,none"

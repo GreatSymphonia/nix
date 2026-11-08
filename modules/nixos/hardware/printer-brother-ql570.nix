@@ -1,19 +1,11 @@
-{ pkgs, brotherQl570Sources, ... }:
+{ pkgs, ... }:
 
-let
-  brotherQl570 =
-    pkgs.callPackage
-      ../pkgs/brother-ql570
-      {
-        inherit brotherQl570Sources;
-      };
-in
 {
   services.printing = {
     enable = true;
 
     drivers = [
-      brotherQl570
+      pkgs.brother-ql570
     ];
   };
 
@@ -21,6 +13,6 @@ in
   # des chemins absolus /opt/brother/...
   systemd.tmpfiles.rules = [
     "d /opt 0755 root root - -"
-    "L+ /opt/brother - - - - ${brotherQl570}/opt/brother"
+    "L+ /opt/brother - - - - ${pkgs.brother-ql570}/opt/brother"
   ];
 }

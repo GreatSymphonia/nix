@@ -1,4 +1,4 @@
-{ config, inputs, lib, pkgs, services, unstablePkgs, ... }:
+{ lib, pkgs, ... }:
 {
   programs.java = {
     enable = true;
@@ -33,21 +33,12 @@
     { allowUnfree = true; }
   '';
 
-  nix.settings = {
-    substituters = [ "https://cache.nixos.org" ];
-    trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    ];
-  };
-
   services.mullvad-vpn = {
     enable = true;
     package = pkgs.mullvad-vpn;
   };
 
   environment.systemPackages = with pkgs; [
-    unstablePkgs.claude-code
-
     file
     vim
     nmap
@@ -72,10 +63,10 @@
     kdePackages.plasma-thunderbolt
     screen
     ripgrep
-    unstablePkgs.clonehero
+    unstable.clonehero
     yarg
     wireguard-tools
-    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
+    zen-browser
     krita
     gimp
     inkscape
@@ -91,14 +82,16 @@
     go
     vesktop
 
-    (python3.withPackages (python-pkgs: with python-pkgs; [
-      pandas
-      requests
-      ansible
-      ansible-core
-      ansible-lint
-      scapy
-      pillow
-    ]))
+    (python3.withPackages (
+      python-pkgs: with python-pkgs; [
+        pandas
+        requests
+        ansible
+        ansible-core
+        ansible-lint
+        scapy
+        pillow
+      ]
+    ))
   ];
 }

@@ -22,20 +22,22 @@ let
     exec ${swayfx}/bin/sway "$@"
   '';
 
-  sessionPackage = (pkgs.writeTextFile {
-    name = "swayfx-session";
-    destination = "/share/wayland-sessions/swayfx.desktop";
-    text = ''
-      [Desktop Entry]
-      Name=SwayFX
-      Comment=Sway avec effets visuels (SwayFX)
-      Exec=${launcher}
-      Type=Application
-      DesktopNames=sway
-    '';
-  }) // {
-    providedSessions = [ "swayfx" ];   # doit correspondre au nom du .desktop
-  };
+  sessionPackage =
+    (pkgs.writeTextFile {
+      name = "swayfx-session";
+      destination = "/share/wayland-sessions/swayfx.desktop";
+      text = ''
+        [Desktop Entry]
+        Name=SwayFX
+        Comment=Sway avec effets visuels (SwayFX)
+        Exec=${launcher}
+        Type=Application
+        DesktopNames=sway
+      '';
+    })
+    // {
+      providedSessions = [ "swayfx" ]; # doit correspondre au nom du .desktop
+    };
 in
 {
   services.displayManager.sessionPackages = [ sessionPackage ];

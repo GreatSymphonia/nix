@@ -1,14 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
-  # Reseau
-  networking.hostName = "nixos";
-  networking.networkmanager = {
-    enable = true;
-    plugins = [ pkgs.networkmanager-openvpn ];
-  };
-
-  # Fuseau horaire et locale
   time.timeZone = "America/New_York";
   i18n.defaultLocale = "fr_CA.UTF-8";
   i18n.extraLocaleSettings = {
@@ -23,7 +15,9 @@
     LC_TIME = "fr_CA.UTF-8";
   };
 
-  # Clavier
-  services.xserver.xkb = { layout = "ca"; variant = "multix"; };
+  services.xserver.xkb = {
+    layout = "ca";
+    variant = "multix";
+  };
   console.keyMap = "cf";
 }

@@ -47,17 +47,12 @@ let
 
     ensure_profile "${source}" "${staged}" "${connectionName}" "${connectionType}"
   '';
-in {
+in
+{
   home.activation.importNetworkManagerProfiles = lib.hm.dag.entryAfter [ "writeBoundary" ] (
-    ensureProfile
-      "/home/louis/Downloads/Sysadmin-LanETS.ovpn"
-      "${profileDir}/Sysadmin-LanETS.ovpn"
+    ensureProfile "/home/louis/Downloads/Sysadmin-LanETS.ovpn" "${profileDir}/Sysadmin-LanETS.ovpn"
       "Sysadmin-LanETS"
       "openvpn"
-    + ensureProfile
-      "/home/louis/Downloads/louis.conf"
-      "${profileDir}/louis.conf"
-      "louis"
-      "wireguard"
+    + ensureProfile "/home/louis/Downloads/louis.conf" "${profileDir}/louis.conf" "louis" "wireguard"
   );
 }

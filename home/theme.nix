@@ -13,22 +13,23 @@
   gtk = {
     enable = true;
     # Écrase toujours ~/.gtkrc-2.0 sans créer de .bak : évite que
-    # l'activation home-manager échoue quand un .bak d'un switch
+    # l'activation Home Manager échoue quand un .bak d'un switch précédent
+    # est déjà présent.
     gtk2.force = true;
     theme = {
-      name    = "Catppuccin-Mocha-Standard-Blue-Dark";
+      name = "Catppuccin-Mocha-Standard-Blue-Dark";
       package = pkgs.catppuccin-gtk.override {
         accents = [ "blue" ];
-        size    = "standard";
+        size = "standard";
         variant = "mocha";
       };
     };
     iconTheme = {
-      name    = "candy-icons";
+      name = "candy-icons";
       package = pkgs.candy-icons;
     };
     cursorTheme = {
-      name    = "Catppuccin-Mocha-Dark-Cursors";
+      name = "Catppuccin-Mocha-Dark-Cursors";
       package = pkgs.catppuccin-cursors.mochaDark;
     };
     gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
@@ -39,8 +40,10 @@
   };
 
   qt = {
-    enable             = true;
+    enable = true;
     platformTheme.name = "Breeze";
-    style.name         = "Breeze";
+    style.name = "Breeze";
   };
+
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 }

@@ -1,5 +1,5 @@
 {
-  description = "NixOS system configuration";
+  description = "Configuration NixOS de Louis";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -36,71 +36,57 @@
     lanzaboote = {
       url = "github:nix-community/lanzaboote";
       inputs.nixpkgs.follows = "nixpkgs";
-    };    
-  };
-
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, catppuccin, nix-flatpak, lanzaboote, brother-ql570-src, ... }:
-  let
-    system = "x86_64-linux";
-    brotherQl570Sources = {
-      cupswrapper =
-        brother-ql570-src + "/cupswrapper-ql570-src-1.1.1-1";
-
-      lpr =
-        brother-ql570-src + "/ql570lpr-1.0.1-0.i386";
-    };
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
-    unstablePkgs = import nixpkgs-unstable {
-      inherit system;
-      config.allowUnfree = true;
-    };
-  in {
-    apps.${system}.home-manager = {
-      type = "app";
-      program = "${home-manager.packages.${system}.home-manager}/bin/home-manager";
-    };
-
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      inherit system;
-      specialArgs = {
-        inherit unstablePkgs inputs brotherQl570Sources;
-      };
-      modules = [
-        home-manager.nixosModules.home-manager
-        lanzaboote.nixosModules.lanzaboote
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.backupFileExtension = "bak";
-          home-manager.extraSpecialArgs = { unstable = unstablePkgs; inherit inputs; };
-          home-manager.sharedModules = [
-            plasma-manager.homeModules.plasma-manager
-            catppuccin.homeModules.catppuccin
-            nix-flatpak.homeManagerModules.nix-flatpak
-          ];
-        }
-        ./configuration.nix
-      ];
-    };
-
-    homeConfigurations."louis@nixos" = home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
-      extraSpecialArgs = {
-        unstable = unstablePkgs;
-        inherit inputs;
-      };
-      modules = [
-        ./home
-        plasma-manager.homeModules.plasma-manager
-        catppuccin.homeModules.catppuccin
-        nix-flatpak.homeManagerModules.nix-flatpak
-        {
-          home.username = "louis";
-          home.homeDirectory = "/home/louis";
-        }
-      ];
     };
   };
+
+  outputs =
+    inputs@{
+      nixpkgs,
+      home-manager,
+      plasma-manager,
+      catppuccin,
+      nix-flatpak,
+      lanzaboote,
+      ...
+    }:
+    let
+      system = "x86_64-linux";
+    in
+    {
+      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt;
+
+      devShells.${system}.default = nixpkgs.legacyPackages.${system}.mkShell {
+        packages = with nixpkgs.legacyPackages.${system}; [
+          nixd
+          nixfmt
+          deadnix
+          statix
+        ];
+      };
+
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        modules = [
+          {
+            nixpkgs.hostPlatform = system;
+            nixpkgs.overlays = [ (import ./pkgs { inherit inputs; }) ];
+          }
+
+          home-manager.nixosModules.home-manager
+          lanzaboote.nixosModules.lanzaboote
+
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "bak";
+            home-manager.sharedModules = [
+              plasma-manager.homeModules.plasma-manager
+              catppuccin.homeModules.catppuccin
+              nix-flatpak.homeManagerModules.nix-flatpak
+            ];
+          }
+
+          ./hosts/nixos
+        ];
+      };
+    };
 }

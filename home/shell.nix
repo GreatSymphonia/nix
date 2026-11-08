@@ -2,19 +2,23 @@
   programs.bash = {
     enable = true;
 
-    historySize     = 10000;
+    historySize = 10000;
     historyFileSize = 20000;
-    historyControl  = [ "ignoredups" "ignorespace" "erasedups" ];
+    historyControl = [
+      "ignoredups"
+      "ignorespace"
+      "erasedups"
+    ];
 
     shellAliases = {
-      ".."   = "cd ..";
-      "..."  = "cd ../..";
-      ll     = "eza -la --icons --group-directories-first";
-      ls     = "eza --icons --group-directories-first";
-      tree   = "eza --tree --icons";
-      df     = "df -h";
-      du     = "du -sh";
-      nixupdate  = "sudo nix flake update --flake /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#nixos && nixsecureboot-check";
+      ".." = "cd ..";
+      "..." = "cd ../..";
+      ll = "eza -la --icons --group-directories-first";
+      ls = "eza --icons --group-directories-first";
+      tree = "eza --tree --icons";
+      df = "df -h";
+      du = "du -sh";
+      nixupdate = "sudo nix flake update --flake /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#nixos && nixsecureboot-check";
       nixcleanup = "sudo nix-collect-garbage -d";
       nixrebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nixos && nixsecureboot-check";
       nixboot = "sudo nixos-rebuild boot --flake /etc/nixos#nixos && nixsecureboot-check";
@@ -22,8 +26,8 @@
       nixcheck = "sudo nixos-rebuild build --flake /etc/nixos#nixos --show-trace";
       nixgit = "sudo sh -c 'cd /etc/nixos && git add -A && git commit -m ''wip'''";
       nixpush = "sudo sh -c 'cd /etc/nixos && git push'";
-      hmcheck = "nix run path:/etc/nixos#home-manager -- build --flake path:/etc/nixos#louis@nixos --no-out-link";
-      hmrebuild = "nix run path:/etc/nixos#home-manager -- switch -b bak --flake path:/etc/nixos#louis@nixos";
+      hmcheck = "sudo nixos-rebuild build --flake /etc/nixos#nixos";
+      hmrebuild = "sudo nixos-rebuild switch --flake /etc/nixos#nixos";
       codenix = "sudo -E code /etc/nixos --no-sandbox --user-data-dir=/home/louis/vscode-sudo";
     };
 
@@ -121,7 +125,7 @@
         esac
 
         case "$subcmd" in
-          ""|main)      sudo -E micro /etc/nixos/configuration.nix ;;
+          ""|main)      sudo -E micro /etc/nixos/hosts/nixos/default.nix ;;
           home)         sudo -E micro /etc/nixos/home/default.nix ;;
           shell)        sudo -E micro /etc/nixos/home/shell.nix ;;
           flake)        sudo -E micro /etc/nixos/flake.nix ;;
@@ -130,23 +134,28 @@
           editors)      sudo -E micro /etc/nixos/home/editors.nix ;;
           apps)         sudo -E micro /etc/nixos/home/apps.nix ;;
           theme)        sudo -E micro /etc/nixos/home/theme.nix ;;
-          mod/boot)     sudo -E micro /etc/nixos/modules/nixos/boot.nix ;;
-          mod/locale)   sudo -E micro /etc/nixos/modules/nixos/system-locale.nix ;;
-          mod/desktop)  sudo -E micro /etc/nixos/modules/nixos/desktop.nix ;;
-          mod/audio)    sudo -E micro /etc/nixos/modules/nixos/audio.nix ;;
-          mod/bt)       sudo -E micro /etc/nixos/modules/nixos/bluetooth.nix ;;
-          mod/user)     sudo -E micro /etc/nixos/modules/nixos/user.nix ;;
+          mod/boot)     sudo -E micro /etc/nixos/modules/nixos/hardware/boot.nix ;;
+          mod/locale)   sudo -E micro /etc/nixos/modules/nixos/core/locale.nix ;;
+          mod/net)      sudo -E micro /etc/nixos/modules/nixos/core/networking.nix ;;
+          mod/desktop)  sudo -E micro /etc/nixos/modules/nixos/desktop/plasma.nix ;;
+          mod/audio)    sudo -E micro /etc/nixos/modules/nixos/hardware/audio.nix ;;
+          mod/bt)       sudo -E micro /etc/nixos/modules/nixos/hardware/bluetooth.nix ;;
+          mod/user)     sudo -E micro /etc/nixos/modules/nixos/core/users.nix ;;
           mod/packages) sudo -E micro /etc/nixos/modules/nixos/packages.nix ;;
-          mod/nix)      sudo -E micro /etc/nixos/modules/nixos/nix-core.nix ;;
-          mod/virt)     sudo -E micro /etc/nixos/modules/nixos/virtualisation.nix ;;
-          *)            echo -E "Sous-commandes: main home shell flake lock git editors apps theme | Modules: mod/<boot|locale|desktop|audio|bt|user|packages|nix|virt>" ;;
+          mod/nix)      sudo -E micro /etc/nixos/modules/nixos/core/nix.nix ;;
+          mod/virt)     sudo -E micro /etc/nixos/modules/nixos/services/virtualisation.nix ;;
+          mod/flatpak)  sudo -E micro /etc/nixos/modules/nixos/services/flatpak.nix ;;
+          mod/sway)     sudo -E micro /etc/nixos/modules/nixos/desktop/sway.nix ;;
+          mod/swayfx)   sudo -E micro /etc/nixos/modules/nixos/desktop/swayfx.nix ;;
+          mod/printer)  sudo -E micro /etc/nixos/modules/nixos/hardware/printer-brother-ql570.nix ;;
+          *)            echo -E "Sous-commandes: main home shell flake lock git editors apps theme | Modules: mod/<boot|locale|net|desktop|audio|bt|user|packages|nix|virt|flatpak|sway|swayfx|printer>" ;;
         esac
       }
 
       _enixcfg_complete() {
         local cur="''${COMP_WORDS[COMP_CWORD]}"
         local core_cmds="main home shell flake lock git editors apps theme mod/"
-        local mod_cmds="mod/boot mod/locale mod/desktop mod/audio mod/bt mod/user mod/packages mod/nix mod/virt"
+        local mod_cmds="mod/boot mod/locale mod/net mod/desktop mod/audio mod/bt mod/user mod/packages mod/nix mod/virt mod/flatpak mod/sway mod/swayfx mod/printer"
 
         if [[ "''${cur}" == mod/* ]]; then
           COMPREPLY=($(compgen -W "$mod_cmds" -- "''${cur}"))
@@ -169,17 +178,17 @@
       format = "$directory$git_branch$git_status$nix_shell$cmd_duration$line_break$character";
       character = {
         success_symbol = "[❯](bold green)";
-        error_symbol   = "[❯](bold red)";
+        error_symbol = "[❯](bold red)";
       };
       directory = {
-        style             = "bold blue";
+        style = "bold blue";
         truncation_length = 4;
       };
-      git_branch.style  = "bold purple";
-      git_status.style  = "bold red";
+      git_branch.style = "bold purple";
+      git_status.style = "bold red";
       nix_shell = {
         symbol = "❄️ ";
-        style  = "bold cyan";
+        style = "bold cyan";
       };
     };
   };

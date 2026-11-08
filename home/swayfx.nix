@@ -1,16 +1,33 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   swaycfg = config.wayland.windowManager.sway;
   waybarPkg = config.programs.waybar.package;
-  asText = v: if v == null then "" else if lib.isString v then v else builtins.readFile v;
+  asText =
+    v:
+    if v == null then
+      ""
+    else if lib.isString v then
+      v
+    else
+      builtins.readFile v;
 
   # --- Waybar dédié à SwayFX ------------------------------------------------
-  waybarFxConfig = pkgs.writeText "waybar-swayfx.json" (builtins.toJSON [
-    (config.programs.waybar.settings.mainBar // {
-      margin = "6 8 0 8";   # barre flottante
-    })
-  ]);
+  waybarFxConfig = pkgs.writeText "waybar-swayfx.json" (
+    builtins.toJSON [
+      (
+        config.programs.waybar.settings.mainBar
+        // {
+          margin = "6 8 0 8"; # barre flottante
+        }
+      )
+    ]
+  );
 
   waybarFxStyle = pkgs.writeText "waybar-swayfx.css" ''
     ${asText config.programs.waybar.style}
@@ -79,16 +96,16 @@ let
   '';
 
   # --- Ta config sway actuelle, adaptée pour la session SwayFX --------------
-  dropLine = pattern: text:
-    lib.concatStringsSep "\n"
-      (builtins.filter (l: builtins.match pattern l == null) (lib.splitString "\n" text));
+  dropLine =
+    pattern: text:
+    lib.concatStringsSep "\n" (
+      builtins.filter (l: builtins.match pattern l == null) (lib.splitString "\n" text)
+    );
 
-  base =
-    dropLine "[[:space:]]*output \"eDP-1\" disable[[:space:]]*"
-      (builtins.replaceStrings
-        [ "swaybar_command waybar" ]
-        [ "swaybar_command ${waybarFx}" ]
-        swaycfg.extraConfig);
+  base = dropLine "[[:space:]]*output \"eDP-1\" disable[[:space:]]*" (
+    builtins.replaceStrings [ "swaybar_command waybar" ] [ "swaybar_command ${waybarFx}" ]
+      swaycfg.extraConfig
+  );
 
   fxExtra = ''
 
@@ -163,5 +180,4 @@ in
   # Sans effet hors session SwayFX (la variable n'y existe pas) : dans SwayFX,
   # c'est le superviseur ci-dessus qui relance waybar, sans `swaymsg reload`.
   systemd.user.services.waybar-watchdog.Unit.ConditionEnvironment = "!SWAYFX_SESSION";
-    dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 }
