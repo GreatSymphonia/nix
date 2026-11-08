@@ -82,6 +82,7 @@
     go
     vesktop
     musescore
+    muse-sounds-manager
 
     (python3.withPackages (
       python-pkgs: with python-pkgs; [
